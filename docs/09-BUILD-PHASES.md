@@ -7,8 +7,8 @@
 |-------|------|--------|--------|-----|
 | 0 | Prerequisites (human) | ☐ | — | — |
 | 1 | Scaffold & tooling | ☑ | bfeec35 | phase-1 |
-| 2 | Database layer & crypto | ☑ | 737359a | phase-2 |
-| 3 | Webhook receiver | ☐ | | phase-3 |
+| 2 | Database layer & crypto | ☑ | e120d2f | phase-2 |
+| 3 | Webhook receiver | ☑ | 3ef02bf | phase-3 |
 | 4 | Matching & reply pipeline | ☐ | | phase-4 |
 | 5 | Admin auth & reel rules | ☐ | | phase-5 |
 | 6 | Activity, stats & token lifecycle | ☐ | | phase-6 |

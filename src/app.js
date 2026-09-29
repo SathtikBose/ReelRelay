@@ -5,6 +5,7 @@ const { errorHandler } = require("./middleware/errorHandler");
 const { NotFoundError } = require("./lib/errors");
 const { env } = require("./config/env");
 const healthRouter = require("./routes/health");
+const webhookRouter = require("./routes/webhook");
 
 /**
  * Creates and configures an Express application instance
@@ -22,12 +23,20 @@ function createApp() {
     app.use(httpLogger);
   }
 
-  // Body parsers
-  app.use(express.json({ limit: "1mb" }));
+  // Body parsers with raw-body capture for HMAC verification
+  app.use(
+    express.json({
+      limit: "1mb",
+      verify: (req, _res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
   // Routes
   app.use("/", healthRouter);
+  app.use("/", webhookRouter);
 
   // 404 handler
   app.use((req, _res, next) => {
