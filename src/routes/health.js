@@ -1,5 +1,6 @@
 const express = require("express");
 const packageJson = require("../../package.json");
+const { getConnectionState } = require("../lib/db");
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ router.get("/health", (_req, res) => {
   res.status(200).json({
     status: "ok",
     uptime: Math.floor(process.uptime()),
-    db: "unknown",
+    db: getConnectionState(),
     version: packageJson.version || "1.0.0",
   });
 });

@@ -1,4 +1,5 @@
 const request = require("supertest");
+const { startDb, stopDb } = require("../setupDb");
 const { createApp } = require("../../src/app");
 const packageJson = require("../../package.json");
 
@@ -9,7 +10,12 @@ describe("Health check & routing integration", () => {
     app = createApp();
   });
 
-  it("GET /health returns 200 with server status", async () => {
+  afterAll(async () => {
+    await stopDb();
+  });
+
+  it("GET /health returns 200 with db='disconnected' when DB is not connected", async () => {
+    await stopDb(); // Ensure disconnected
     const res = await request(app).get("/health");
 
     expect(res.status).toBe(200);
@@ -17,10 +23,19 @@ describe("Health check & routing integration", () => {
     expect(res.body).toEqual({
       status: "ok",
       uptime: expect.any(Number),
-      db: "unknown",
+      db: "disconnected",
       version: packageJson.version,
     });
     expect(res.headers["x-request-id"]).toBeDefined();
+  });
+
+  it("GET /health returns 200 with db='connected' when DB is connected", async () => {
+    await startDb();
+
+    const res = await request(app).get("/health");
+
+    expect(res.status).toBe(200);
+    expect(res.body.db).toBe("connected");
   });
 
   it("returns 404 with standard error JSON for unknown routes", async () => {
