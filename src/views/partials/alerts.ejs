@@ -1,0 +1,8 @@
+<% if (typeof flash !== 'undefined' && flash && flash.message) { %>
+  <div class="toast-container" role="status" aria-live="polite">
+    <div class="toast toast-<%= flash.type === 'error' ? 'error' : 'success' %>">
+      <span><%= flash.type === 'error' ? '⚠️' : '✅' %></span>
+      <span><%= flash.message %></span>
+    </div>
+  </div>
+<% } %>

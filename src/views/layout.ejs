@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'ReelRelay Admin' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/admin.js" defer></script>
+</head>
+<body>
+  <header class="top-header">
+    <div class="logo-container">
+      <a href="/admin/reels" class="logo-link">
+        <span class="status-dot" title="Service Connected"></span>
+        <span>ReelRelay</span>
+      </a>
+    </div>
+    <div class="header-actions">
+      <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+        <form action="/admin/logout" method="POST" style="margin:0;">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <button type="submit" class="btn btn-secondary btn-sm">Log out</button>
+        </form>
+      <% } %>
+    </div>
+  </header>
+
+  <%- include('partials/alerts') %>
+
+  <div class="app-container">
+    <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+      <%- include('partials/nav') %>
+    <% } %>
+    <main class="main-content">
+      <%- body %>
+    </main>
+  </div>
+</body>
+</html>

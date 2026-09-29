@@ -48,16 +48,20 @@ function errorHandler(err, req, res, next) {
     },
   };
 
-  // If client expects HTML and not JSON, and view engine is active
-  if (req.accepts && req.accepts("html") && !req.is("json") && !req.path.startsWith("/api") && !req.path.startsWith("/webhook")) {
-    if (typeof res.render === "function" && req.app.get("view engine")) {
-      return res.status(statusCode).render("error", {
-        title: "Error",
-        statusCode,
-        message,
-        code,
-      });
-    }
+  // Render HTML error page only for admin browser pages
+  const isAdminHtmlPage =
+    req.path.startsWith("/admin") &&
+    !req.path.startsWith("/admin/api") &&
+    !req.xhr &&
+    !req.headers.accept?.includes("application/json");
+
+  if (isAdminHtmlPage && typeof res.render === "function" && req.app.get("view engine")) {
+    return res.status(statusCode).render("error", {
+      title: "Error",
+      statusCode,
+      message,
+      code,
+    });
   }
 
   return res.status(statusCode).json(errorResponse);

@@ -1,0 +1,26 @@
+<% const current = typeof activeNav !== 'undefined' ? activeNav : ''; %>
+<nav class="desktop-nav" aria-label="Desktop navigation">
+  <ul class="nav-list">
+    <li>
+      <a href="/admin/reels" class="nav-item-link <%= current === 'reels' ? 'active' : '' %>">
+        <span>🎬</span> Reels
+      </a>
+    </li>
+    <li>
+      <a href="/admin/reels/new" class="nav-item-link <%= current === 'new_reel' ? 'active' : '' %>">
+        <span>➕</span> New Rule
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="mobile-tab-bar" aria-label="Mobile navigation">
+  <a href="/admin/reels" class="tab-link <%= current === 'reels' ? 'active' : '' %>">
+    <span style="font-size: 18px;">🎬</span>
+    <span>Reels</span>
+  </a>
+  <a href="/admin/reels/new" class="tab-link <%= current === 'new_reel' ? 'active' : '' %>">
+    <span style="font-size: 18px;">➕</span>
+    <span>New Rule</span>
+  </a>
+</nav>
