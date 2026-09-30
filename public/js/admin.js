@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? hiddenKeywords.value.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
       : [];
 
-    function renderChips() {
+    const renderChips = () => {
       chipContainer.querySelectorAll(".chip").forEach((c) => c.remove());
       keywords.forEach((kw, index) => {
         const chip = document.createElement("span");
@@ -59,11 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       hiddenKeywords.value = keywords.join(",");
       updatePreview();
-    }
+    };
 
-    function syncKeywords() {
+    const syncKeywords = () => {
       renderChips();
-    }
+    };
 
     chipInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === ",") {
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const charCounter = document.getElementById("char-counter");
   const previewBubble = document.getElementById("preview-bubble");
 
-  function updatePreview() {
+  const updatePreview = () => {
     if (!templateInput || !previewBubble) return;
 
     const rawTemplate = templateInput.value || "";

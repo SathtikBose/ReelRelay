@@ -3,6 +3,7 @@ const { logger } = require("./lib/logger");
 const { createApp } = require("./app");
 const { connectDb, disconnectDb } = require("./lib/db");
 const { bootstrapToken } = require("./services/tokenService");
+const { initScheduler, stopScheduler } = require("./services/scheduler");
 
 const app = createApp();
 
@@ -12,6 +13,7 @@ async function startServer() {
   try {
     await connectDb();
     await bootstrapToken();
+    initScheduler();
 
     server = app.listen(env.PORT, () => {
       logger.info(`ReelRelay server listening on port ${env.PORT} [${env.NODE_ENV}]`);
@@ -23,11 +25,12 @@ async function startServer() {
 }
 
 /**
- * Gracefully shuts down the HTTP server and database connections
+ * Gracefully shuts down the HTTP server, scheduler, and database connections
  * @param {string} signal
  */
 async function handleShutdown(signal) {
   logger.info(`Received ${signal}. Shutting down gracefully...`);
+  stopScheduler();
 
   if (server) {
     server.close(async (err) => {

@@ -1,13 +1,16 @@
 const express = require("express");
 const authRoutes = require("./auth");
+const dashboardRoutes = require("./dashboard");
 const reelsRoutes = require("./reels");
+const activityRoutes = require("./activity");
+const settingsRoutes = require("./settings");
 const apiRoutes = require("./api");
 const { requireAuth } = require("../../middleware/auth");
 const { doubleCsrfProtection, csrfErrorHandler } = require("../../middleware/csrf");
 
 const router = express.Router();
 
-// Flash messages middleware for EJS templates
+// Flash messages & template context middleware
 router.use((req, res, next) => {
   res.locals.flash = req.session?.flash || null;
   if (req.session?.flash) {
@@ -26,12 +29,10 @@ router.use(csrfErrorHandler);
 router.use("/", authRoutes);
 
 // Protected Admin routes
+router.use("/", requireAuth, dashboardRoutes);
 router.use("/reels", requireAuth, reelsRoutes);
+router.use("/activity", requireAuth, activityRoutes);
+router.use("/settings", requireAuth, settingsRoutes);
 router.use("/api", requireAuth, apiRoutes);
-
-// Root admin redirect
-router.get("/", requireAuth, (req, res) => {
-  return res.redirect("/admin/reels");
-});
 
 module.exports = router;

@@ -11,7 +11,7 @@
 | 3 | Webhook receiver | ☑ | 3ef02bf | phase-3 |
 | 4 | Matching & reply pipeline | ☑ | 9332e9a | phase-4 |
 | 5 | Admin auth & reel rules | ☑ | 12ce717 | phase-5 |
-| 6 | Activity, stats & token lifecycle | ☐ | | phase-6 |
+| 6 | Activity, stats & token lifecycle | ☑ | 82b9c3c | phase-6 |
 | 7 | Hardening & polish | ☐ | | phase-7 |
 | 8 | Deployment & live E2E | ☐ | | phase-8 |
 | 9 | Optional enhancements | ☐ | | — |

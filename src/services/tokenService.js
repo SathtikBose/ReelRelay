@@ -65,9 +65,10 @@ async function getDecryptedToken() {
 async function saveToken(token, expiresInSeconds = null, igUserId = env.IG_USER_ID) {
   const { tokenCipher, tokenIv, tokenTag } = encrypt(token);
 
-  const expiresAt = typeof expiresInSeconds === "number" && expiresInSeconds > 0
-    ? new Date(Date.now() + expiresInSeconds * 1000)
-    : null;
+  const expiresAt =
+    typeof expiresInSeconds === "number" && expiresInSeconds > 0
+      ? new Date(Date.now() + expiresInSeconds * 1000)
+      : null;
 
   const updated = await Credential.findOneAndUpdate(
     { key: "instagram" },
@@ -154,10 +155,73 @@ async function getTokenStatus() {
   };
 }
 
+/**
+ * Performs a token refresh if token exists and has < 15 days remaining (or expiresAt is null)
+ * @returns {Promise<{ refreshed: boolean, error?: string }>}
+ */
+async function refreshIfNeeded() {
+  const status = await getTokenStatus();
+  if (!status.exists) {
+    return { refreshed: false, reason: "No credential in database" };
+  }
+
+  // Refresh if no expiration date is recorded or if <= 15 days remain
+  const shouldRefresh = status.expiresAt === null || (status.daysLeft !== null && status.daysLeft <= 15);
+
+  if (!shouldRefresh) {
+    logger.debug({ daysLeft: status.daysLeft }, "Token has sufficient validity; refresh skipped");
+    return { refreshed: false, reason: "Token validity sufficient" };
+  }
+
+  try {
+    const instagramClient = require("./instagramClient");
+    const currentToken = await getDecryptedToken();
+    const result = await instagramClient.refreshToken(currentToken);
+
+    await saveToken(result.access_token, result.expires_in);
+    logger.info("Automatically refreshed Instagram access token");
+    return { refreshed: true };
+  } catch (err) {
+    logger.error({ err }, "Error during automated token refresh");
+    await recordRefreshFailure(err.message);
+    return { refreshed: false, error: err.message };
+  }
+}
+
+/**
+ * Manually forces a token refresh via Instagram API
+ * @returns {Promise<{ access_token: string, expires_in: number }>}
+ */
+async function manualRefresh() {
+  const instagramClient = require("./instagramClient");
+  const currentToken = await getDecryptedToken();
+  const result = await instagramClient.refreshToken(currentToken);
+
+  await saveToken(result.access_token, result.expires_in);
+  logger.info("Manually refreshed Instagram access token");
+  return result;
+}
+
+/**
+ * Replaces stored token with a freshly provided token from the admin
+ * @param {string} newToken
+ * @param {number} [expiresInSeconds=5184000] // Default 60 days in seconds
+ * @returns {Promise<InstanceType<typeof Credential>>}
+ */
+async function replaceToken(newToken, expiresInSeconds = 60 * 24 * 60 * 60) {
+  if (typeof newToken !== "string" || !newToken.trim()) {
+    throw new AppError("Access token is required", 400, "INVALID_TOKEN");
+  }
+  return saveToken(newToken.trim(), expiresInSeconds);
+}
+
 module.exports = {
   bootstrapToken,
   getDecryptedToken,
   saveToken,
   recordRefreshFailure,
   getTokenStatus,
+  refreshIfNeeded,
+  manualRefresh,
+  replaceToken,
 };

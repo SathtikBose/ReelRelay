@@ -1,0 +1,158 @@
+<%- include('../partials/header') %>
+
+<div style="margin-bottom: 24px;">
+  <h1 style="font-size: 24px; font-weight: 700;">Settings</h1>
+  <p style="color: var(--muted); font-size: 14px;">Token management, webhook configuration, and service health</p>
+</div>
+
+<!-- 1. Instagram Access Token Card -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">1. Instagram Access Token</h2>
+    <% if (tokenStatus.exists) { %>
+      <span class="badge <%= tokenStatus.isExpired ? 'badge-paused' : 'badge-active' %>">
+        <%= tokenStatus.isExpired ? 'Expired' : 'Active' %>
+      </span>
+    <% } else { %>
+      <span class="badge badge-paused">Not Configured</span>
+    <% } %>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+    <div>
+      <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Status</div>
+      <div style="font-size: 15px; font-weight: 600;">
+        <%= tokenStatus.exists ? (tokenStatus.isExpired ? 'Token Expired ⚠️' : 'Encrypted & Stored (AES-256-GCM)') : 'Missing Token ⚠️' %>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Expires In</div>
+      <div style="font-size: 15px; font-weight: 600;">
+        <% if (tokenStatus.daysLeft !== null) { %>
+          <span style="color: <%= tokenStatus.daysLeft < 15 ? 'var(--warning)' : 'var(--text)' %>;">
+            <%= tokenStatus.daysLeft %> days
+          </span>
+          <% if (tokenStatus.expiresAt) { %>
+            <span style="font-size: 12px; color: var(--muted); font-weight: normal;">
+              (<%= new Date(tokenStatus.expiresAt).toLocaleDateString() %>)
+            </span>
+          <% } %>
+        <% } else { %>
+          <span style="color: var(--muted);">Long-lived (auto-refreshed daily)</span>
+        <% } %>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Last Refresh Check</div>
+      <div style="font-size: 15px; font-weight: 600;">
+        <% if (tokenStatus.lastRefreshedAt) { %>
+          <%= new Date(tokenStatus.lastRefreshedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) %>
+          <% if (tokenStatus.lastRefreshStatus === 'error') { %>
+            <span style="color: var(--danger); font-size: 12px;">(Failed)</span>
+          <% } else { %>
+            <span style="color: var(--success); font-size: 12px;">(OK)</span>
+          <% } %>
+        <% } else { %>
+          <span style="color: var(--muted);">Never</span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <% if (tokenStatus.lastRefreshError) { %>
+    <div style="background: rgba(220, 38, 38, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 10px 14px; border-radius: var(--input-radius); font-size: 13px; margin-bottom: 16px;">
+      <strong>Last Refresh Error:</strong> <%= tokenStatus.lastRefreshError %>
+    </div>
+  <% } %>
+
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <form action="/admin/settings/refresh-token" method="POST" style="margin: 0;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn-secondary">
+        🔄 Refresh Token Now
+      </button>
+    </form>
+  </div>
+
+  <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+
+  <!-- Replace Token Form -->
+  <div>
+    <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Replace Instagram Access Token</h3>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+      Generate a fresh 60-day token from Meta Graph API Explorer and paste it below.
+    </p>
+
+    <form action="/admin/settings/replace-token" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div style="display: flex; gap: 8px;">
+        <input 
+          type="password" 
+          name="token" 
+          class="form-input" 
+          required 
+          placeholder="EAA..." 
+          style="font-family: monospace;"
+        >
+        <button type="submit" class="btn btn-primary" style="flex-shrink: 0;">
+          Save Token
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. Webhook Configuration Card -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">2. Webhook Setup (Meta Developer Portal)</h2>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Callback URL</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" readonly class="form-input" value="<%= webhook.callbackUrl %>" id="callback-url-input" style="background: var(--bg);">
+      <button type="button" class="btn btn-secondary" style="flex-shrink: 0;" onclick="navigator.clipboard.writeText(document.getElementById('callback-url-input').value); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000);">
+        Copy
+      </button>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-bottom: 0;">
+    <label class="form-label">Verify Token (Configured in .env)</label>
+    <input type="text" readonly class="form-input" value="<%= webhook.verifyTokenHint %>" style="background: var(--bg); font-family: monospace;">
+    <div class="form-hint">Enter your full IG_VERIFY_TOKEN secret in the Meta App Dashboard webhook settings.</div>
+  </div>
+</div>
+
+<!-- 3. System & Application Info -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">3. Application Info</h2>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; font-size: 14px;">
+    <div>
+      <div style="color: var(--muted); font-size: 12px;">App Version</div>
+      <strong>v<%= appInfo.version %></strong>
+    </div>
+    <div>
+      <div style="color: var(--muted); font-size: 12px;">Process Uptime</div>
+      <strong><%= appInfo.uptime %></strong>
+    </div>
+    <div>
+      <div style="color: var(--muted); font-size: 12px;">Node.js Runtime</div>
+      <strong><%= appInfo.nodeVersion %></strong>
+    </div>
+    <div>
+      <div style="color: var(--muted); font-size: 12px;">Database State</div>
+      <strong style="color: <%= appInfo.dbStatus === 'connected' ? 'var(--success)' : 'var(--danger)' %>;">
+        <%= appInfo.dbStatus %>
+      </strong>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
