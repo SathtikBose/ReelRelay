@@ -4,6 +4,7 @@ const { createApp } = require("./app");
 const { connectDb, disconnectDb } = require("./lib/db");
 const { bootstrapToken } = require("./services/tokenService");
 const { initScheduler, stopScheduler } = require("./services/scheduler");
+const { queue } = require("./lib/queue");
 
 const app = createApp();
 
@@ -28,9 +29,18 @@ async function startServer() {
  * Gracefully shuts down the HTTP server, scheduler, and database connections
  * @param {string} signal
  */
-async function handleShutdown(signal) {
+async function handleShutdown(signal = "SIGTERM") {
   logger.info(`Received ${signal}. Shutting down gracefully...`);
   stopScheduler();
+
+  // Pause queue from accepting new tasks and wait for in-flight tasks to complete
+  try {
+    queue.pause();
+    await queue.onIdle();
+    logger.info("Pipeline task queue drained successfully.");
+  } catch (qErr) {
+    logger.warn({ err: qErr }, "Error while draining task queue");
+  }
 
   if (server) {
     server.close(async (err) => {
@@ -40,35 +50,45 @@ async function handleShutdown(signal) {
       try {
         await disconnectDb();
         logger.info("Server and database connections closed successfully.");
-        process.exit(0);
+        if (env.NODE_ENV !== "test") {
+          process.exit(0);
+        }
       } catch (dbErr) {
         logger.error({ err: dbErr }, "Error closing database connection");
-        process.exit(1);
+        if (env.NODE_ENV !== "test") {
+          process.exit(1);
+        }
       }
     });
   } else {
     await disconnectDb();
-    process.exit(0);
+    if (env.NODE_ENV !== "test") {
+      process.exit(0);
+    }
   }
 
   // Force close if graceful shutdown takes too long
   setTimeout(() => {
     logger.error("Forced shutdown due to timeout.");
-    process.exit(1);
+    if (env.NODE_ENV !== "test") {
+      process.exit(1);
+    }
   }, 10000).unref();
 }
 
-process.on("SIGTERM", () => handleShutdown("SIGTERM"));
-process.on("SIGINT", () => handleShutdown("SIGINT"));
+if (process.env.NODE_ENV !== "test") {
+  process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+  process.on("SIGINT", () => handleShutdown("SIGINT"));
 
-process.on("unhandledRejection", (reason, promise) => {
-  logger.fatal({ reason, promise }, "Unhandled Rejection at Promise");
-});
+  process.on("unhandledRejection", (reason, promise) => {
+    logger.fatal({ reason, promise }, "Unhandled Rejection at Promise");
+  });
 
-process.on("uncaughtException", (err) => {
-  logger.fatal({ err }, "Uncaught Exception thrown");
-  process.exit(1);
-});
+  process.on("uncaughtException", (err) => {
+    logger.fatal({ err }, "Uncaught Exception thrown");
+    process.exit(1);
+  });
+}
 
 if (require.main === module) {
   startServer();
@@ -77,4 +97,5 @@ if (require.main === module) {
 module.exports = {
   app,
   startServer,
+  handleShutdown,
 };

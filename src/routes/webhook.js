@@ -1,10 +1,14 @@
 const express = require("express");
 const { verifySignature, verifyHandshakeToken } = require("../services/webhookValidator");
 const { normalizeWebhookPayload } = require("../services/normalizer");
+const { webhookLimiter } = require("../middleware/rateLimiter");
 const pipeline = require("../services/pipeline");
 const { logger } = require("../lib/logger");
 
 const router = express.Router();
+
+// Apply generous rate limiter to webhook endpoint
+router.use("/webhook", webhookLimiter);
 
 /**
  * GET /webhook

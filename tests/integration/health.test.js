@@ -46,6 +46,7 @@ describe("Health check & routing integration", () => {
       error: {
         code: "NOT_FOUND",
         message: "Route GET /unknown-route not found",
+        requestId: expect.any(String),
       },
     });
   });

@@ -31,6 +31,26 @@ const loginLimiter = rateLimit({
   },
 });
 
+/**
+ * Rate limiter for webhook event delivery & handshake:
+ * 300 requests per 1 minute per IP (generous for Meta burst traffic while preventing DoS).
+ */
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: env.NODE_ENV === "test" ? 10000 : 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    return res.status(429).json({
+      error: {
+        code: "RATE_LIMITED",
+        message: "Too many webhook requests from this IP. Please slow down.",
+      },
+    });
+  },
+});
+
 module.exports = {
   loginLimiter,
+  webhookLimiter,
 };

@@ -1,5 +1,6 @@
 const path = require("path");
 const express = require("express");
+const helmet = require("helmet");
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -23,6 +24,28 @@ function createApp() {
   app.set("trust proxy", 1);
   app.set("view engine", "ejs");
   app.set("views", path.join(__dirname, "views"));
+
+  // Security Headers via Helmet
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: [
+            "'self'",
+            "data:",
+            "https://*.cdninstagram.com",
+            "https://*.fbcdn.net",
+            "https://scontent*.cdninstagram.com",
+          ],
+          frameAncestors: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+    })
+  );
 
   // Static files
   app.use(express.static(path.join(__dirname, "../public")));

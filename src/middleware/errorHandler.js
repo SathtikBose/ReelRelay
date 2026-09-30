@@ -43,6 +43,7 @@ function errorHandler(err, req, res, next) {
     error: {
       code,
       message,
+      requestId: req.id,
       ...(details.length > 0 ? { details } : {}),
       ...(env.NODE_ENV !== "production" && !isAppError ? { stack: err.stack } : {}),
     },
@@ -61,6 +62,7 @@ function errorHandler(err, req, res, next) {
       statusCode,
       message,
       code,
+      requestId: req.id,
     });
   }
 

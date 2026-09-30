@@ -12,7 +12,7 @@
 | 4 | Matching & reply pipeline | ☑ | 9332e9a | phase-4 |
 | 5 | Admin auth & reel rules | ☑ | 12ce717 | phase-5 |
 | 6 | Activity, stats & token lifecycle | ☑ | 8f8a02d | phase-6 |
-| 7 | Hardening & polish | ☐ | | phase-7 |
+| 7 | Hardening & polish | ☑ | 1ff7b32 | phase-7 |
 | 8 | Deployment & live E2E | ☐ | | phase-8 |
 | 9 | Optional enhancements | ☐ | | — |
 

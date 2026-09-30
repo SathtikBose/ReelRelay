@@ -8,6 +8,11 @@
   <p style="color: var(--muted); margin-bottom: 24px; font-size: 15px;">
     <%= typeof message !== 'undefined' ? message : 'An unexpected error occurred.' %>
   </p>
+  <% if (typeof requestId !== 'undefined' && requestId) { %>
+    <p style="font-size: 12px; color: var(--muted); margin-bottom: 24px; font-family: monospace;">
+      Request ID: <%= requestId %>
+    </p>
+  <% } %>
   <a href="/admin/reels" class="btn btn-primary">Return to Reel Rules</a>
 </div>
 
