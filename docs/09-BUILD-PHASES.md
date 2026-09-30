@@ -13,7 +13,7 @@
 | 5 | Admin auth & reel rules | ☑ | 12ce717 | phase-5 |
 | 6 | Activity, stats & token lifecycle | ☑ | 8f8a02d | phase-6 |
 | 7 | Hardening & polish | ☑ | 56d8e5c | phase-7 |
-| 8 | Deployment & live E2E | ☐ | | phase-8 |
+| 8 | Deployment & live E2E | ☑ | 4427563 | phase-8, v1.0.0 |
 | 9 | Optional enhancements | ☐ | | — |
 
 ---
