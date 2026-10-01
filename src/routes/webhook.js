@@ -54,8 +54,20 @@ router.post("/webhook", (req, res) => {
   // Asynchronous event processing after acknowledgement
   try {
     const events = normalizeWebhookPayload(req.body);
-    for (const event of events) {
-      pipeline.enqueue(event);
+    if (events.length > 0) {
+      logger.info({ count: events.length }, "Validated Instagram webhook event(s) received");
+      for (const event of events) {
+        logger.info(
+          {
+            commentId: event.commentId,
+            mediaId: event.mediaId,
+            from: event.commenterUsername,
+            text: event.text,
+          },
+          "Enqueued comment to DM delivery pipeline"
+        );
+        pipeline.enqueue(event);
+      }
     }
   } catch (err) {
     logger.error({ err }, "Error processing normalized webhook events");
