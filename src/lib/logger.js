@@ -41,15 +41,12 @@ const httpLogger = pinoHttp({
   logger,
   genReqId: (req) => req.headers["x-request-id"] || req.id,
   autoLogging: {
-    ignore: (req) => {
-      const url = req.url ? req.url.split("?")[0] : "";
-      return url === "/health" || url === "/health/";
-    },
+    ignore: (_req) => true, // Silences all routine HTTP request spam
   },
   customLogLevel: (_req, res, err) => {
     if (res.statusCode >= 500 || err) return "error";
     if (res.statusCode >= 400) return "warn";
-    return "info";
+    return "silent";
   },
   serializers: {
     req: (req) => ({
