@@ -34,12 +34,20 @@ router.get("/webhook", (req, res) => {
  * Instagram event receiver endpoint
  */
 router.post("/webhook", (req, res) => {
-  const signatureHeader = req.headers["x-hub-signature-256"];
+  const signatureHeader =
+    req.headers["x-hub-signature-256"] || req.headers["x-hub-signature"];
   const rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body || {}));
 
   const isValid = verifySignature(rawBody, signatureHeader);
   if (!isValid) {
-    logger.warn({ hasSignature: !!signatureHeader }, "Rejecting webhook with invalid signature");
+    logger.warn(
+      {
+        hasSignature: !!signatureHeader,
+        headerPrefix: signatureHeader ? signatureHeader.slice(0, 15) : "none",
+        bodyBytes: rawBody ? rawBody.length : 0,
+      },
+      "Rejecting webhook with invalid signature"
+    );
     return res.status(401).json({
       error: {
         code: "UNAUTHORIZED",

@@ -2,21 +2,22 @@ const crypto = require("crypto");
 const { env } = require("../config/env");
 
 /**
- * Computes HMAC-SHA256 hex digest for a raw body buffer or string
+ * Computes HMAC hex digest for a raw body buffer or string
  * @param {Buffer | string} rawBody
  * @param {string} [appSecret=env.IG_APP_SECRET]
+ * @param {string} [algo="sha256"]
  * @returns {string} Hex string
  */
-function computeSignature(rawBody, appSecret = env.IG_APP_SECRET) {
-  const hmac = crypto.createHmac("sha256", appSecret);
+function computeSignature(rawBody, appSecret = env.IG_APP_SECRET, algo = "sha256") {
+  const hmac = crypto.createHmac(algo, appSecret);
   hmac.update(rawBody);
   return hmac.digest("hex");
 }
 
 /**
- * Validates Meta X-Hub-Signature-256 header using timing-safe comparison
+ * Validates Meta X-Hub-Signature-256 or X-Hub-Signature header using timing-safe comparison
  * @param {Buffer | string} rawBody
- * @param {string | undefined} signatureHeader Header value e.g. "sha256=abcdef..."
+ * @param {string | undefined} signatureHeader Header value e.g. "sha256=abcdef..." or "sha1=abcdef..."
  * @param {string} [appSecret=env.IG_APP_SECRET]
  * @returns {boolean} True if signature is valid
  */
@@ -30,13 +31,19 @@ function verifySignature(rawBody, signatureHeader, appSecret = env.IG_APP_SECRET
   }
 
   const parts = signatureHeader.split("=");
-  if (parts.length !== 2 || parts[0] !== "sha256") {
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const algo = parts[0].toLowerCase();
+  if (algo !== "sha256" && algo !== "sha1") {
     return false;
   }
 
   const receivedHex = parts[1];
   const candidateSecrets = [
     appSecret,
+    env.IG_APP_SECRET,
     env.IG_INSTAGRAM_APP_SECRET,
     "8037d767ff5b83e47041f246d1bc91bb",
     "9ed04384e9bfa9fa52b0b7c8d8cbb805",
@@ -46,7 +53,7 @@ function verifySignature(rawBody, signatureHeader, appSecret = env.IG_APP_SECRET
   const uniqueSecrets = [...new Set(candidateSecrets)];
 
   for (const secret of uniqueSecrets) {
-    const expectedHex = computeSignature(rawBody, secret);
+    const expectedHex = computeSignature(rawBody, secret, algo);
     if (receivedHex.length === expectedHex.length) {
       const receivedBuffer = Buffer.from(receivedHex, "hex");
       const expectedBuffer = Buffer.from(expectedHex, "hex");
