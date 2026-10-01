@@ -21,7 +21,7 @@ const reelSchema = new mongoose.Schema(
     },
     caption: {
       type: String,
-      maxlength: [120, "caption cannot exceed 120 characters"],
+      maxlength: [2200, "caption cannot exceed 2200 characters"],
       default: "",
     },
     thumbnailUrl: {

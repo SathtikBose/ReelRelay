@@ -48,8 +48,11 @@ const ruleInputSchema = z.object({
     .union([z.boolean(), z.string()])
     .transform((val) => val === true || val === "true" || val === "on")
     .default(true),
-  isActive: z.union([z.boolean(), z.string()]).optional(),
-  caption: z.string().optional().default(""),
+  caption: z
+    .string()
+    .optional()
+    .default("")
+    .transform((val) => (val || "").slice(0, 2200)),
   captionSnippet: z.string().optional(),
   thumbnailUrl: z.string().optional().nullable().default(""),
   permalink: z.string().optional().nullable().default(""),

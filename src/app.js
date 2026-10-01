@@ -91,6 +91,8 @@ function createApp() {
   );
 
   // Routes
+  app.get("/", (_req, res) => res.redirect("/admin"));
+  app.head("/", (_req, res) => res.status(200).end());
   app.use("/", healthRouter);
   app.use("/", webhookRouter);
   app.use("/admin", adminRouter);
