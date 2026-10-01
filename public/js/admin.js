@@ -9,6 +9,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 4000);
   });
 
+  // Elements for live template preview and character counter
+  const templateInput = document.getElementById("template-input");
+  const linkInput = document.getElementById("link-input");
+  const charCounter = document.getElementById("char-counter");
+  const previewBubble = document.getElementById("preview-bubble");
+  const hiddenKeywords = document.getElementById("keywords-hidden");
+
+  function updatePreview() {
+    if (!templateInput || !previewBubble) return;
+
+    const rawTemplate = templateInput.value || "";
+    const link = linkInput?.value || "https://example.com/your-link";
+    const firstKeyword = hiddenKeywords?.value ? hiddenKeywords.value.split(",")[0] : "link";
+
+    let rendered = rawTemplate
+      .replace(/{{link}}/g, link)
+      .replace(/{{username}}/g, "alex")
+      .replace(/{{keyword}}/g, firstKeyword);
+
+    if (rendered.length > 800) {
+      rendered = rendered.slice(0, 800);
+    }
+
+    previewBubble.textContent = rendered;
+
+    if (charCounter) {
+      const len = rawTemplate.length;
+      charCounter.textContent = `${len} / 800`;
+      if (len > 800) {
+        charCounter.style.color = "var(--danger)";
+      } else {
+        charCounter.style.color = "var(--muted)";
+      }
+    }
+  }
+
+  if (templateInput) {
+    templateInput.addEventListener("input", updatePreview);
+  }
+  if (linkInput) {
+    linkInput.addEventListener("input", updatePreview);
+  }
+
   // 2. Segmented control switching
   const segmentedControls = document.querySelectorAll(".segmented-control");
   segmentedControls.forEach((control) => {
@@ -29,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. Keyword chips input
   const chipContainer = document.getElementById("keyword-chips-container");
   const chipInput = document.getElementById("keyword-chip-input");
-  const hiddenKeywords = document.getElementById("keywords-hidden");
 
   if (chipContainer && chipInput && hiddenKeywords) {
     let keywords = hiddenKeywords.value
@@ -81,48 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     renderChips();
-  }
-
-  // 4. Live template preview and character counter
-  const templateInput = document.getElementById("template-input");
-  const linkInput = document.getElementById("link-input");
-  const charCounter = document.getElementById("char-counter");
-  const previewBubble = document.getElementById("preview-bubble");
-
-  const updatePreview = () => {
-    if (!templateInput || !previewBubble) return;
-
-    const rawTemplate = templateInput.value || "";
-    const link = linkInput?.value || "https://example.com/your-link";
-    const firstKeyword = hiddenKeywords?.value ? hiddenKeywords.value.split(",")[0] : "link";
-
-    let rendered = rawTemplate
-      .replace(/{{link}}/g, link)
-      .replace(/{{username}}/g, "alex")
-      .replace(/{{keyword}}/g, firstKeyword);
-
-    if (rendered.length > 800) {
-      rendered = rendered.slice(0, 800);
-    }
-
-    previewBubble.textContent = rendered;
-
-    if (charCounter) {
-      const len = rawTemplate.length;
-      charCounter.textContent = `${len} / 800`;
-      if (len > 800) {
-        charCounter.style.color = "var(--danger)";
-      } else {
-        charCounter.style.color = "var(--muted)";
-      }
-    }
-  }
-
-  if (templateInput) {
-    templateInput.addEventListener("input", updatePreview);
-  }
-  if (linkInput) {
-    linkInput.addEventListener("input", updatePreview);
   }
 
   // Variable chip inserters
