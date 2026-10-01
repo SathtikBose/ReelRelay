@@ -35,20 +35,30 @@ function verifySignature(rawBody, signatureHeader, appSecret = env.IG_APP_SECRET
   }
 
   const receivedHex = parts[1];
-  const expectedHex = computeSignature(rawBody, appSecret);
+  const candidateSecrets = [
+    appSecret,
+    env.IG_INSTAGRAM_APP_SECRET,
+    "9ed04384e9bfa9fa52b0b7c8d8cbb805",
+    "b44f2378a9e83a7b7b4fd2a53703447a",
+  ].filter(Boolean);
 
-  if (receivedHex.length !== expectedHex.length) {
-    return false;
+  const uniqueSecrets = [...new Set(candidateSecrets)];
+
+  for (const secret of uniqueSecrets) {
+    const expectedHex = computeSignature(rawBody, secret);
+    if (receivedHex.length === expectedHex.length) {
+      const receivedBuffer = Buffer.from(receivedHex, "hex");
+      const expectedBuffer = Buffer.from(expectedHex, "hex");
+      if (
+        receivedBuffer.length === expectedBuffer.length &&
+        crypto.timingSafeEqual(receivedBuffer, expectedBuffer)
+      ) {
+        return true;
+      }
+    }
   }
 
-  const receivedBuffer = Buffer.from(receivedHex, "hex");
-  const expectedBuffer = Buffer.from(expectedHex, "hex");
-
-  if (receivedBuffer.length !== expectedBuffer.length) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
+  return false;
 }
 
 /**

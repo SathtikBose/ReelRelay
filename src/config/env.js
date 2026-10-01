@@ -8,6 +8,7 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   IG_APP_ID: z.string().min(1, "IG_APP_ID is required"),
   IG_APP_SECRET: z.string().min(1, "IG_APP_SECRET is required"),
+  IG_INSTAGRAM_APP_SECRET: z.string().optional(),
   IG_VERIFY_TOKEN: z.string().min(1, "IG_VERIFY_TOKEN is required"),
   IG_USER_ID: z.string().min(1, "IG_USER_ID is required"),
   IG_ACCESS_TOKEN: z.string().optional(),
