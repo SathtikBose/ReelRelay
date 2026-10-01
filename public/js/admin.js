@@ -78,6 +78,17 @@ document.addEventListener("DOMContentLoaded", () => {
       ? hiddenKeywords.value.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
       : [];
 
+    const addKeywordsFromText = (text) => {
+      if (!text) return;
+      const parts = text.split(/[,\s]+/).map((k) => k.trim().toLowerCase()).filter(Boolean);
+      for (const val of parts) {
+        if (val && !keywords.includes(val) && keywords.length < 10) {
+          keywords.push(val);
+        }
+      }
+      syncKeywords();
+    };
+
     const renderChips = () => {
       chipContainer.querySelectorAll(".chip").forEach((c) => c.remove());
       keywords.forEach((kw, index) => {
@@ -110,17 +121,36 @@ document.addEventListener("DOMContentLoaded", () => {
     chipInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === ",") {
         e.preventDefault();
-        const val = chipInput.value.trim().toLowerCase().replace(/^,|,$/g, "");
-        if (val && !keywords.includes(val) && keywords.length < 10) {
-          keywords.push(val);
-          chipInput.value = "";
-          syncKeywords();
-        }
+        addKeywordsFromText(chipInput.value);
+        chipInput.value = "";
       } else if (e.key === "Backspace" && !chipInput.value && keywords.length > 0) {
         keywords.pop();
         syncKeywords();
       }
     });
+
+    chipInput.addEventListener("blur", () => {
+      if (chipInput.value.trim()) {
+        addKeywordsFromText(chipInput.value);
+        chipInput.value = "";
+      }
+    });
+
+    chipInput.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData("text");
+      addKeywordsFromText(pasted);
+    });
+
+    const parentForm = chipContainer.closest("form");
+    if (parentForm) {
+      parentForm.addEventListener("submit", () => {
+        if (chipInput.value.trim()) {
+          addKeywordsFromText(chipInput.value);
+          chipInput.value = "";
+        }
+      });
+    }
 
     renderChips();
   }
@@ -214,6 +244,46 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // 6. Test Link button
+  const testLinkBtn = document.getElementById("test-link-btn");
+  if (testLinkBtn && linkInput) {
+    testLinkBtn.addEventListener("click", () => {
+      const url = linkInput.value.trim();
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    });
+  }
+
+  // 7. Copy Callback URL button
+  const copyCallbackBtn = document.getElementById("copy-callback-btn");
+  const callbackUrlInput = document.getElementById("callback-url-input");
+  if (copyCallbackBtn && callbackUrlInput) {
+    copyCallbackBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(callbackUrlInput.value);
+        const orig = copyCallbackBtn.textContent;
+        copyCallbackBtn.textContent = "Copied!";
+        setTimeout(() => {
+          copyCallbackBtn.textContent = orig;
+        }, 2000);
+      } catch (err) {
+        callbackUrlInput.select();
+        document.execCommand("copy");
+      }
+    });
+  }
+
+  // 8. Confirmation dialogs for forms with data-confirm
+  document.querySelectorAll("form[data-confirm]").forEach((form) => {
+    form.addEventListener("submit", (e) => {
+      const msg = form.getAttribute("data-confirm") || "Are you sure?";
+      if (!window.confirm(msg)) {
+        e.preventDefault();
+      }
+    });
+  });
 
   // Initial preview render
   updatePreview();

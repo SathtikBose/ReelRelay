@@ -114,7 +114,7 @@
     <label class="form-label">Callback URL</label>
     <div style="display: flex; gap: 8px;">
       <input type="text" readonly class="form-input" value="<%= webhook.callbackUrl %>" id="callback-url-input" style="background: var(--bg);">
-      <button type="button" class="btn btn-secondary" style="flex-shrink: 0;" onclick="navigator.clipboard.writeText(document.getElementById('callback-url-input').value); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000);">
+      <button type="button" class="btn btn-secondary" id="copy-callback-btn" style="flex-shrink: 0;">
         Copy
       </button>
     </div>
