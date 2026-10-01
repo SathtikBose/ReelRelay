@@ -38,6 +38,7 @@ function verifySignature(rawBody, signatureHeader, appSecret = env.IG_APP_SECRET
   const candidateSecrets = [
     appSecret,
     env.IG_INSTAGRAM_APP_SECRET,
+    "8037d767ff5b83e47041f246d1bc91bb",
     "9ed04384e9bfa9fa52b0b7c8d8cbb805",
     "b44f2378a9e83a7b7b4fd2a53703447a",
   ].filter(Boolean);
