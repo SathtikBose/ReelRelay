@@ -1,6 +1,6 @@
 const express = require("express");
 const instagramClient = require("../../services/instagramClient");
-const { Reel } = require("../../models/reel");
+const { Reel } = require("../../models/Reel");
 const { logger } = require("../../lib/logger");
 
 const router = express.Router();

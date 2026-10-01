@@ -2,8 +2,8 @@ const request = require("supertest");
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const { createApp } = require("../../src/app");
-const { Reel } = require("../../src/models/reel");
-const { ReplyLog } = require("../../src/models/replyLog");
+const { Reel } = require("../../src/models/Reel");
+const { ReplyLog } = require("../../src/models/ReplyLog");
 const { env } = require("../../src/config/env");
 const instagramClient = require("../../src/services/instagramClient");
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const { z } = require("zod");
-const { Reel, DEFAULT_DM_TEMPLATE } = require("../../models/reel");
+const { Reel, DEFAULT_DM_TEMPLATE } = require("../../models/Reel");
 const { generateToken } = require("../../middleware/csrf");
 const { logger } = require("../../lib/logger");
 

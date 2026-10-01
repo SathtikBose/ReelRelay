@@ -1,5 +1,5 @@
-const { ReplyLog } = require("../models/replyLog");
-const { Reel } = require("../models/reel");
+const { ReplyLog } = require("../models/ReplyLog");
+const { Reel } = require("../models/Reel");
 const tokenService = require("./tokenService");
 
 /**
