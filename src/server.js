@@ -4,6 +4,7 @@ const { createApp } = require("./app");
 const { connectDb, disconnectDb } = require("./lib/db");
 const { bootstrapToken } = require("./services/tokenService");
 const { initScheduler, stopScheduler } = require("./services/scheduler");
+const { subscribeAppWebhooks } = require("./services/instagramClient");
 const { queue } = require("./lib/queue");
 
 const app = createApp();
@@ -15,6 +16,13 @@ async function startServer() {
     await connectDb();
     await bootstrapToken();
     initScheduler();
+
+    try {
+      await subscribeAppWebhooks();
+      logger.info("Instagram webhook subscriptions verified for account");
+    } catch (subErr) {
+      logger.warn({ err: subErr }, "Could not automatically subscribe Instagram webhooks on start");
+    }
 
     server = app.listen(env.PORT, () => {
       logger.info(`ReelRelay server listening on port ${env.PORT} [${env.NODE_ENV}]`);

@@ -225,10 +225,21 @@ async function refreshToken(currentToken) {
   }
 }
 
+/**
+ * Subscribes the Instagram Creator account to webhook fields (comments, messages)
+ * @returns {Promise<{ success: boolean }>}
+ */
+async function subscribeAppWebhooks() {
+  const fields = "comments,messages";
+  const endpoint = `/me/subscribed_apps?subscribed_fields=${encodeURIComponent(fields)}`;
+  return callInstagramApi(endpoint, { method: "POST" });
+}
+
 module.exports = {
   sendPrivateReply,
   listRecentMedia,
   refreshToken,
+  subscribeAppWebhooks,
   callInstagramApi,
   classifyError,
   getApiBaseUrl,
