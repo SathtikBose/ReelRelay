@@ -603,3 +603,118 @@ a:hover {
 .empty-state p {
   margin-bottom: 16px;
 }
+
+/* Platform Tabs (Shell) */
+.platform-tabs {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--input-radius);
+  padding: 3px;
+  gap: 2px;
+}
+
+.platform-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.platform-tab:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.platform-tab.active {
+  background-color: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.platform-tab.tab-instagram.active {
+  border-bottom: 2px solid var(--primary);
+}
+
+.platform-tab.tab-youtube.active {
+  border-bottom: 2px solid #E11D48;
+}
+
+@media (prefers-color-scheme: dark) {
+  .platform-tab.tab-youtube.active {
+    border-bottom: 2px solid #FB7185;
+  }
+}
+
+.platform-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: var(--success);
+}
+
+.platform-status-dot.dot-inactive {
+  background-color: var(--muted);
+  opacity: 0.6;
+}
+
+.platform-status-dot.dot-warning {
+  background-color: var(--warning);
+}
+
+.platform-status-dot.dot-error {
+  background-color: var(--danger);
+}
+
+/* Platform Badges */
+.badge-ig {
+  background-color: rgba(108, 92, 231, 0.12);
+  color: var(--primary);
+}
+
+.badge-yt {
+  background-color: rgba(225, 29, 72, 0.12);
+  color: #E11D48;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge-yt {
+    color: #FB7185;
+  }
+}
+
+/* Overview Layout */
+.app-container.overview-layout {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .top-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .platform-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+  }
+  
+  .platform-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+}
+

@@ -10,11 +10,16 @@
 <body>
   <header class="top-header">
     <div class="logo-container">
-      <a href="/admin/reels" class="logo-link">
+      <a href="/admin" class="logo-link">
         <span class="status-dot" title="Connected"></span>
         <span>ReelRelay</span>
       </a>
     </div>
+
+    <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+      <%- include('tabs') %>
+    <% } %>
+
     <div class="header-actions">
       <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
         <form action="/admin/logout" method="POST" style="margin:0;">
@@ -27,8 +32,8 @@
 
   <%- include('alerts') %>
 
-  <div class="app-container">
-    <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-      <%- include('nav') %>
+  <div class="app-container <%= typeof platform !== 'undefined' && platform === 'overview' ? 'overview-layout' : '' %>">
+    <% if (typeof isAdmin !== 'undefined' && isAdmin && (typeof platform === 'undefined' || platform !== 'overview')) { %>
+      <%- include('subnav') %>
     <% } %>
     <main class="main-content">

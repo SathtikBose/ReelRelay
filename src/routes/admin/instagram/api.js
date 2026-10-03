@@ -1,11 +1,11 @@
 const express = require("express");
-const instagramClient = require("../../services/instagramClient");
-const { Reel } = require("../../models/Reel");
-const { logger } = require("../../lib/logger");
+const instagramClient = require("../../../services/instagramClient");
+const { Reel } = require("../../../models/Reel");
+const { logger } = require("../../../lib/logger");
 
 const router = express.Router();
 
-// GET /admin/api/media (reel picker endpoint)
+// GET /admin/instagram/api/media (reel picker endpoint)
 router.get("/media", async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit, 10) || 25, 50);

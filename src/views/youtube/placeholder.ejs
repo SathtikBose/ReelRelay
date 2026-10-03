@@ -1,0 +1,48 @@
+<%- include('../partials/header') %>
+
+<div class="youtube-placeholder-container" style="max-width: 680px; margin: 0 auto; padding-top: 20px;">
+  <div class="card" style="text-align: center; padding: 40px 24px;">
+    <div style="font-size: 48px; margin-bottom: 16px;">▶️</div>
+    <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--text);">
+      YouTube Auto-Reply Module
+    </h1>
+    <p style="color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      ReelRelay automatically replies publicly to comments on your YouTube videos and Shorts when viewers ask for links or use specific trigger keywords.
+    </p>
+
+    <div style="background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 20px; text-align: left; margin-bottom: 28px;">
+      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text);">
+        How it works:
+      </h3>
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--muted);">
+        <li style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: var(--success); font-weight: bold;">✓</span>
+          <span><strong>Secure Channel Connect:</strong> Connect your YouTube channel via Google OAuth with minimal required permissions.</span>
+        </li>
+        <li style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: var(--success); font-weight: bold;">✓</span>
+          <span><strong>Video & Shorts Rules:</strong> Pick recent uploads or paste video URLs to configure keyword triggers.</span>
+        </li>
+        <li style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: var(--success); font-weight: bold;">✓</span>
+          <span><strong>Smart Public Replies:</strong> Responds with rotated reply templates containing links and personalized author tags.</span>
+        </li>
+        <li style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: var(--success); font-weight: bold;">✓</span>
+          <span><strong>Quota & Anti-Spam Protection:</strong> Pacific-day quota tracking, jittered delays, and hourly caps.</span>
+        </li>
+      </ul>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+      <button class="btn btn-primary" style="padding: 12px 28px; font-size: 15px; background-color: #E11D48; border-color: #E11D48;" disabled title="OAuth Connect will be available in Phase Y2">
+        <span>Connect YouTube Channel</span>
+      </button>
+      <span class="badge" style="background-color: rgba(225, 29, 72, 0.12); color: #E11D48; font-weight: 500;">
+        OAuth Setup & Credential Storage is in Phase Y2
+      </span>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

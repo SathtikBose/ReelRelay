@@ -1,0 +1,16 @@
+<%
+  const currentPlatform = typeof platform !== 'undefined' ? platform : (typeof activeNav !== 'undefined' && activeNav === 'overview' ? 'overview' : 'instagram');
+%>
+<nav class="platform-tabs" aria-label="Platform selection">
+  <a href="/admin" class="platform-tab tab-overview <%= currentPlatform === 'overview' ? 'active' : '' %>" <%- currentPlatform === 'overview' ? 'aria-current="page"' : '' %>>
+    <span>Overview</span>
+  </a>
+  <a href="/admin/instagram/dashboard" class="platform-tab tab-instagram <%= currentPlatform === 'instagram' ? 'active' : '' %>" <%- currentPlatform === 'instagram' ? 'aria-current="page"' : '' %>>
+    <span class="platform-status-dot dot-instagram" title="Instagram Connected"></span>
+    <span>Instagram</span>
+  </a>
+  <a href="/admin/youtube" class="platform-tab tab-youtube <%= currentPlatform === 'youtube' ? 'active' : '' %>" <%- currentPlatform === 'youtube' ? 'aria-current="page"' : '' %>>
+    <span class="platform-status-dot dot-youtube dot-inactive" title="YouTube Not Connected"></span>
+    <span>YouTube</span>
+  </a>
+</nav>

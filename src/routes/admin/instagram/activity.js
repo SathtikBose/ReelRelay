@@ -1,17 +1,17 @@
 const express = require("express");
-const { ReplyLog } = require("../../models/ReplyLog");
-const { Reel } = require("../../models/Reel");
-const { render } = require("../../services/template");
-const instagramClient = require("../../services/instagramClient");
-const { generateToken } = require("../../middleware/csrf");
-const { logger } = require("../../lib/logger");
+const { ReplyLog } = require("../../../models/ReplyLog");
+const { Reel } = require("../../../models/Reel");
+const { render } = require("../../../services/template");
+const instagramClient = require("../../../services/instagramClient");
+const { generateToken } = require("../../../middleware/csrf");
+const { logger } = require("../../../lib/logger");
 
 const router = express.Router();
 
 const PAGE_SIZE = 25;
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-// GET /admin/activity — Activity log with filters and pagination
+// GET /admin/instagram/activity — Activity log with filters and pagination
 router.get("/", async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -51,6 +51,8 @@ router.get("/", async (req, res, next) => {
       currentMediaId: mediaIdFilter,
       csrfToken,
       title: "Activity Log — ReelRelay",
+      platform: "instagram",
+      section: "activity",
       activeNav: "activity",
       now: Date.now(),
       SEVEN_DAYS_MS,
@@ -60,7 +62,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// POST /admin/activity/:id/retry — Retry failed DM
+// POST /admin/instagram/activity/:id/retry — Retry failed DM
 router.post("/:id/retry", async (req, res) => {
   const { id } = req.params;
 
@@ -69,12 +71,12 @@ router.post("/:id/retry", async (req, res) => {
 
     if (!log) {
       req.session.flash = { type: "error", message: "Activity log entry not found" };
-      return res.redirect("/admin/activity");
+      return res.redirect("/admin/instagram/activity");
     }
 
     if (log.status === "sent") {
       req.session.flash = { type: "error", message: "This DM has already been sent successfully" };
-      return res.redirect("/admin/activity");
+      return res.redirect("/admin/instagram/activity");
     }
 
     // Check 7-day age window per Instagram Platform Policy
@@ -84,7 +86,7 @@ router.post("/:id/retry", async (req, res) => {
         type: "error",
         message: "Cannot retry DMs for comments older than 7 days per Instagram platform policy.",
       };
-      return res.redirect("/admin/activity");
+      return res.redirect("/admin/instagram/activity");
     }
 
     // Look up rule to get template and link
@@ -94,7 +96,7 @@ router.post("/:id/retry", async (req, res) => {
         type: "error",
         message: "No active rule found for this reel media ID to construct DM text.",
       };
-      return res.redirect("/admin/activity");
+      return res.redirect("/admin/instagram/activity");
     }
 
     const templateToUse = rule.dmTemplate || rule.template;
@@ -130,11 +132,11 @@ router.post("/:id/retry", async (req, res) => {
       req.session.flash = { type: "error", message: `Retry failed: ${err.message}` };
     }
 
-    return res.redirect("/admin/activity");
+    return res.redirect("/admin/instagram/activity");
   } catch (err) {
     logger.error({ err }, "Error processing retry request");
     req.session.flash = { type: "error", message: "Unexpected error retrying DM" };
-    return res.redirect("/admin/activity");
+    return res.redirect("/admin/instagram/activity");
   }
 });
 

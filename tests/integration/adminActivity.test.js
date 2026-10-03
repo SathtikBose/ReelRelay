@@ -68,7 +68,7 @@ describe("Admin Activity & Retry Integration", () => {
     authCookies = updateCookies(loginRes, authCookies);
 
     const formPage = await request(app)
-      .get("/admin/reels/new")
+      .get("/admin/instagram/reels/new")
       .set("Cookie", toCookieHeader(authCookies));
 
     authCookies = updateCookies(formPage, authCookies);
@@ -97,7 +97,7 @@ describe("Admin Activity & Retry Integration", () => {
 
     // Filter status=sent
     const resSent = await request(app)
-      .get("/admin/activity?status=sent")
+      .get("/admin/instagram/activity?status=sent")
       .set("Cookie", toCookieHeader(authCookies));
 
     expect(resSent.status).toBe(200);
@@ -106,7 +106,7 @@ describe("Admin Activity & Retry Integration", () => {
 
     // Filter mediaId=179222
     const resMedia = await request(app)
-      .get("/admin/activity?mediaId=179222")
+      .get("/admin/instagram/activity?mediaId=179222")
       .set("Cookie", toCookieHeader(authCookies));
 
     expect(resMedia.status).toBe(200);
@@ -142,13 +142,13 @@ describe("Admin Activity & Retry Integration", () => {
     });
 
     const res = await request(app)
-      .post(`/admin/activity/${failedLog._id}/retry`)
+      .post(`/admin/instagram/activity/${failedLog._id}/retry`)
       .set("Cookie", toCookieHeader(authCookies))
       .type("form")
       .send({ _csrf: currentCsrfToken });
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/admin/activity");
+    expect(res.headers.location).toBe("/admin/instagram/activity");
 
     const updatedLog = await ReplyLog.findById(failedLog._id);
     expect(updatedLog.status).toBe("sent");
@@ -184,13 +184,13 @@ describe("Admin Activity & Retry Integration", () => {
     jest.spyOn(instagramClient, "sendPrivateReply");
 
     const res = await request(app)
-      .post(`/admin/activity/${oldFailedLog._id}/retry`)
+      .post(`/admin/instagram/activity/${oldFailedLog._id}/retry`)
       .set("Cookie", toCookieHeader(authCookies))
       .type("form")
       .send({ _csrf: currentCsrfToken });
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/admin/activity");
+    expect(res.headers.location).toBe("/admin/instagram/activity");
 
     expect(instagramClient.sendPrivateReply).not.toHaveBeenCalled();
 

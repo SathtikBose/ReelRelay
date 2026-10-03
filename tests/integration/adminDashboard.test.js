@@ -67,7 +67,48 @@ describe("Admin Dashboard Integration", () => {
     authCookies = updateCookies(loginRes, authCookies);
   });
 
-  it("renders dashboard with aggregate statistics", async () => {
+  it("renders overview page on /admin with multi-platform cards", async () => {
+    // 1. Seed rules
+    await Reel.create({
+      mediaId: "179001",
+      keywords: ["link"],
+      link: "https://example.com/1",
+      active: true,
+    });
+
+    // 2. Seed reply logs
+    await ReplyLog.create({
+      commentId: "c1",
+      mediaId: "179001",
+      commenterId: "u1",
+      commenterUsername: "user1",
+      commentText: "link please",
+      matchedKeyword: "link",
+      status: "sent",
+      sentAt: new Date(),
+    });
+
+    // 3. Seed credential
+    await Credential.create({
+      key: "instagram",
+      tokenCipher: "cipher",
+      tokenIv: "iv",
+      tokenTag: "tag",
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    const res = await request(app)
+      .get("/admin")
+      .set("Cookie", toCookieHeader(authCookies));
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("Platform Overview");
+    expect(res.text).toContain("Instagram");
+    expect(res.text).toContain("YouTube");
+    expect(res.text).toContain("@user1");
+  });
+
+  it("renders Instagram dashboard on /admin/instagram/dashboard with aggregate statistics", async () => {
     // 1. Seed rules
     await Reel.create({
       mediaId: "179001",
@@ -114,11 +155,11 @@ describe("Admin Dashboard Integration", () => {
     });
 
     const res = await request(app)
-      .get("/admin")
+      .get("/admin/instagram/dashboard")
       .set("Cookie", toCookieHeader(authCookies));
 
     expect(res.status).toBe(200);
-    expect(res.text).toContain("Dashboard");
+    expect(res.text).toContain("Instagram Dashboard");
     expect(res.text).toContain("Sent (Today)");
     expect(res.text).toContain("Active Rules");
     expect(res.text).toContain("@user1");
@@ -135,7 +176,7 @@ describe("Admin Dashboard Integration", () => {
     });
 
     const res = await request(app)
-      .get("/admin")
+      .get("/admin/instagram/dashboard")
       .set("Cookie", toCookieHeader(authCookies));
 
     expect(res.status).toBe(200);

@@ -68,7 +68,7 @@
   <% } %>
 
   <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-    <form action="/admin/settings/refresh-token" method="POST" style="margin: 0;">
+    <form action="/admin/instagram/settings/refresh-token" method="POST" style="margin: 0;">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button type="submit" class="btn btn-secondary">
         🔄 Refresh Token Now
@@ -85,7 +85,7 @@
       Generate a fresh 60-day token from Meta Graph API Explorer and paste it below.
     </p>
 
-    <form action="/admin/settings/replace-token" method="POST">
+    <form action="/admin/instagram/settings/replace-token" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div style="display: flex; gap: 8px;">
         <input 

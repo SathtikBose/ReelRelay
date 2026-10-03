@@ -66,7 +66,7 @@ describe("Admin Reels & Rules Integration", () => {
     authCookies = updateCookies(loginRes, authCookies);
 
     const reelsPage = await request(app)
-      .get("/admin/reels")
+      .get("/admin/instagram/reels")
       .set("Cookie", toCookieHeader(authCookies));
 
     authCookies = updateCookies(reelsPage, authCookies);
@@ -74,10 +74,10 @@ describe("Admin Reels & Rules Integration", () => {
     currentCsrfToken = reelsMatch ? reelsMatch[1] : initialCsrf;
   });
 
-  describe("GET /admin/reels", () => {
+  describe("GET /admin/instagram/reels", () => {
     it("renders empty state when no rules exist", async () => {
       const res = await request(app)
-        .get("/admin/reels")
+        .get("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(authCookies));
 
       expect(res.status).toBe(200);
@@ -97,7 +97,7 @@ describe("Admin Reels & Rules Integration", () => {
       });
 
       const res = await request(app)
-        .get("/admin/reels")
+        .get("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(authCookies));
 
       expect(res.status).toBe(200);
@@ -112,10 +112,10 @@ describe("Admin Reels & Rules Integration", () => {
     });
   });
 
-  describe("POST /admin/reels (Create)", () => {
+  describe("POST /admin/instagram/reels (Create)", () => {
     it("rejects request without CSRF token with 403", async () => {
       const res = await request(app)
-        .post("/admin/reels")
+        .post("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({
@@ -127,9 +127,9 @@ describe("Admin Reels & Rules Integration", () => {
       expect(res.status).toBe(403);
     });
 
-    it("creates a new rule successfully and redirects to /admin/reels", async () => {
+    it("creates a new rule successfully and redirects to /admin/instagram/reels", async () => {
       const res = await request(app)
-        .post("/admin/reels")
+        .post("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({
@@ -144,7 +144,7 @@ describe("Admin Reels & Rules Integration", () => {
         });
 
       expect(res.status).toBe(302);
-      expect(res.headers.location).toBe("/admin/reels");
+      expect(res.headers.location).toBe("/admin/instagram/reels");
 
       const created = await Reel.findOne({ mediaId: "179111222333" });
       expect(created).toBeDefined();
@@ -156,7 +156,7 @@ describe("Admin Reels & Rules Integration", () => {
 
     it("rejects non-https link with 400 validation error", async () => {
       const res = await request(app)
-        .post("/admin/reels")
+        .post("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({
@@ -178,7 +178,7 @@ describe("Admin Reels & Rules Integration", () => {
       });
 
       const res = await request(app)
-        .post("/admin/reels")
+        .post("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({
@@ -193,7 +193,7 @@ describe("Admin Reels & Rules Integration", () => {
     });
   });
 
-  describe("POST /admin/reels/:id (Update)", () => {
+  describe("POST /admin/instagram/reels/:id (Update)", () => {
     it("updates existing rule fields and redirects", async () => {
       const rule = await Reel.create({
         mediaId: "179888777666",
@@ -203,7 +203,7 @@ describe("Admin Reels & Rules Integration", () => {
       });
 
       const res = await request(app)
-        .post(`/admin/reels/${rule._id}`)
+        .post(`/admin/instagram/reels/${rule._id}`)
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({
@@ -217,7 +217,7 @@ describe("Admin Reels & Rules Integration", () => {
         });
 
       expect(res.status).toBe(302);
-      expect(res.headers.location).toBe("/admin/reels");
+      expect(res.headers.location).toBe("/admin/instagram/reels");
 
       const updated = await Reel.findById(rule._id);
       expect(updated.keywords).toEqual(["new", "updated"]);
@@ -227,7 +227,7 @@ describe("Admin Reels & Rules Integration", () => {
     });
   });
 
-  describe("POST /admin/reels/:id/toggle", () => {
+  describe("POST /admin/instagram/reels/:id/toggle", () => {
     it("toggles active status from true to false and back", async () => {
       const rule = await Reel.create({
         mediaId: "179333444555",
@@ -237,7 +237,7 @@ describe("Admin Reels & Rules Integration", () => {
       });
 
       const toggleRes1 = await request(app)
-        .post(`/admin/reels/${rule._id}/toggle`)
+        .post(`/admin/instagram/reels/${rule._id}/toggle`)
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({ _csrf: currentCsrfToken });
@@ -247,7 +247,7 @@ describe("Admin Reels & Rules Integration", () => {
       expect(updated.active).toBe(false);
 
       const toggleRes2 = await request(app)
-        .post(`/admin/reels/${rule._id}/toggle`)
+        .post(`/admin/instagram/reels/${rule._id}/toggle`)
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({ _csrf: currentCsrfToken });
@@ -258,7 +258,7 @@ describe("Admin Reels & Rules Integration", () => {
     });
   });
 
-  describe("POST /admin/reels/:id/delete", () => {
+  describe("POST /admin/instagram/reels/:id/delete", () => {
     it("deletes the rule from database", async () => {
       const rule = await Reel.create({
         mediaId: "179555666777",
@@ -267,7 +267,7 @@ describe("Admin Reels & Rules Integration", () => {
       });
 
       const res = await request(app)
-        .post(`/admin/reels/${rule._id}/delete`)
+        .post(`/admin/instagram/reels/${rule._id}/delete`)
         .set("Cookie", toCookieHeader(authCookies))
         .type("form")
         .send({ _csrf: currentCsrfToken });
@@ -278,7 +278,7 @@ describe("Admin Reels & Rules Integration", () => {
     });
   });
 
-  describe("GET /admin/api/media (Reel Picker)", () => {
+  describe("GET /admin/instagram/api/media (Reel Picker)", () => {
     it("returns formatted reels list with hasRule status", async () => {
       await Reel.create({
         mediaId: "1790001",
@@ -311,7 +311,7 @@ describe("Admin Reels & Rules Integration", () => {
       });
 
       const res = await request(app)
-        .get("/admin/api/media")
+        .get("/admin/instagram/api/media")
         .set("Cookie", toCookieHeader(authCookies))
         .set("Accept", "application/json");
 
@@ -330,7 +330,7 @@ describe("Admin Reels & Rules Integration", () => {
       );
 
       const res = await request(app)
-        .get("/admin/api/media")
+        .get("/admin/instagram/api/media")
         .set("Cookie", toCookieHeader(authCookies))
         .set("Accept", "application/json");
 

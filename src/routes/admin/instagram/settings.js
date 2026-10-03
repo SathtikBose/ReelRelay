@@ -1,10 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const tokenService = require("../../services/tokenService");
-const { env } = require("../../config/env");
-const { generateToken } = require("../../middleware/csrf");
-const { logger } = require("../../lib/logger");
-const packageJson = require("../../../package.json");
+const tokenService = require("../../../services/tokenService");
+const { env } = require("../../../config/env");
+const { generateToken } = require("../../../middleware/csrf");
+const { logger } = require("../../../lib/logger");
+const packageJson = require("../../../../package.json");
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ function formatUptime(seconds) {
   return parts.join(" ");
 }
 
-// GET /admin/settings — Settings page
+// GET /admin/instagram/settings — Settings page
 router.get("/", async (req, res, next) => {
   try {
     const tokenStatus = await tokenService.getTokenStatus();
@@ -63,7 +63,9 @@ router.get("/", async (req, res, next) => {
         environment: env.NODE_ENV,
       },
       csrfToken,
-      title: "Settings — ReelRelay",
+      title: "Instagram Settings — ReelRelay",
+      platform: "instagram",
+      section: "settings",
       activeNav: "settings",
     });
   } catch (err) {
@@ -71,7 +73,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// POST /admin/settings/refresh-token — Manual token refresh
+// POST /admin/instagram/settings/refresh-token — Manual token refresh
 router.post("/refresh-token", async (req, res) => {
   try {
     const result = await tokenService.manualRefresh();
@@ -89,10 +91,10 @@ router.post("/refresh-token", async (req, res) => {
       message: `Token refresh failed: ${err.message}`,
     };
   }
-  return res.redirect("/admin/settings");
+  return res.redirect("/admin/instagram/settings");
 });
 
-// POST /admin/settings/replace-token — Replace access token
+// POST /admin/instagram/settings/replace-token — Replace access token
 router.post("/replace-token", async (req, res) => {
   const { token } = req.body || {};
 
@@ -101,7 +103,7 @@ router.post("/replace-token", async (req, res) => {
       type: "error",
       message: "Please enter a valid Instagram Access Token.",
     };
-    return res.redirect("/admin/settings");
+    return res.redirect("/admin/instagram/settings");
   }
 
   try {
@@ -118,7 +120,7 @@ router.post("/replace-token", async (req, res) => {
       message: `Failed to save new token: ${err.message}`,
     };
   }
-  return res.redirect("/admin/settings");
+  return res.redirect("/admin/instagram/settings");
 });
 
 module.exports = router;

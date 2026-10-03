@@ -67,7 +67,7 @@ describe("Admin Settings Integration", () => {
     authCookies = updateCookies(loginRes, authCookies);
 
     const settingsPage = await request(app)
-      .get("/admin/settings")
+      .get("/admin/instagram/settings")
       .set("Cookie", toCookieHeader(authCookies));
 
     authCookies = updateCookies(settingsPage, authCookies);
@@ -79,7 +79,7 @@ describe("Admin Settings Integration", () => {
     await tokenService.saveToken("EAA_test_token", 45 * 24 * 60 * 60);
 
     const res = await request(app)
-      .get("/admin/settings")
+      .get("/admin/instagram/settings")
       .set("Cookie", toCookieHeader(authCookies));
 
     expect(res.status).toBe(200);
@@ -89,7 +89,7 @@ describe("Admin Settings Integration", () => {
     expect(res.text).toContain("connected");
   });
 
-  it("manually refreshes token via POST /admin/settings/refresh-token", async () => {
+  it("manually refreshes token via POST /admin/instagram/settings/refresh-token", async () => {
     await tokenService.saveToken("EAA_old_token", 10 * 24 * 60 * 60);
 
     jest.spyOn(instagramClient, "refreshToken").mockResolvedValue({
@@ -99,21 +99,21 @@ describe("Admin Settings Integration", () => {
     });
 
     const res = await request(app)
-      .post("/admin/settings/refresh-token")
+      .post("/admin/instagram/settings/refresh-token")
       .set("Cookie", toCookieHeader(authCookies))
       .type("form")
       .send({ _csrf: currentCsrfToken });
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/admin/settings");
+    expect(res.headers.location).toBe("/admin/instagram/settings");
 
     const decrypted = await tokenService.getDecryptedToken();
     expect(decrypted).toBe("EAA_refreshed_new_token");
   });
 
-  it("replaces token via POST /admin/settings/replace-token", async () => {
+  it("replaces token via POST /admin/instagram/settings/replace-token", async () => {
     const res = await request(app)
-      .post("/admin/settings/replace-token")
+      .post("/admin/instagram/settings/replace-token")
       .set("Cookie", toCookieHeader(authCookies))
       .type("form")
       .send({
@@ -122,7 +122,7 @@ describe("Admin Settings Integration", () => {
       });
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/admin/settings");
+    expect(res.headers.location).toBe("/admin/instagram/settings");
 
     const decrypted = await tokenService.getDecryptedToken();
     expect(decrypted).toBe("EAA_brand_new_custom_token");

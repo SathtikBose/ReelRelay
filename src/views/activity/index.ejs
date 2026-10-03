@@ -9,7 +9,7 @@
 
 <!-- Filter Bar -->
 <div class="card" style="padding: 14px; margin-bottom: 20px;">
-  <form action="/admin/activity" method="GET" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+  <form action="/admin/instagram/activity" method="GET" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
     <div style="flex: 1; min-width: 140px;">
       <label for="status-filter" style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Status</label>
       <select id="status-filter" name="status" class="form-select" style="padding: 6px 10px; font-size: 14px;">
@@ -36,7 +36,7 @@
     <div style="align-self: flex-end;">
       <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;">Filter</button>
       <% if (currentStatus !== 'all' || currentMediaId) { %>
-        <a href="/admin/activity" class="btn btn-secondary btn-sm" style="height: 38px;">Reset</a>
+        <a href="/admin/instagram/activity" class="btn btn-secondary btn-sm" style="height: 38px;">Reset</a>
       <% } %>
     </div>
   </form>
@@ -109,7 +109,7 @@
               </td>
               <td style="padding: 12px 14px; text-align: right; white-space: nowrap;">
                 <% if (isEligibleForRetry) { %>
-                  <form action="/admin/activity/<%= log._id %>/retry" method="POST" style="margin: 0; display: inline;">
+                  <form action="/admin/instagram/activity/<%= log._id %>/retry" method="POST" style="margin: 0; display: inline;">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn-secondary btn-sm" title="Retry sending DM (available within 7 days of comment)">
                       🔄 Retry
@@ -137,12 +137,12 @@
     </div>
     <div style="display: flex; gap: 8px;">
       <% if (currentPage > 1) { %>
-        <a href="/admin/activity?page=<%= currentPage - 1 %>&status=<%= currentStatus %>&mediaId=<%= currentMediaId %>" class="btn btn-secondary btn-sm">
+        <a href="/admin/instagram/activity?page=<%= currentPage - 1 %>&status=<%= currentStatus %>&mediaId=<%= currentMediaId %>" class="btn btn-secondary btn-sm">
           ← Previous
         </a>
       <% } %>
       <% if (currentPage < totalPages) { %>
-        <a href="/admin/activity?page=<%= currentPage + 1 %>&status=<%= currentStatus %>&mediaId=<%= currentMediaId %>" class="btn btn-secondary btn-sm">
+        <a href="/admin/instagram/activity?page=<%= currentPage + 1 %>&status=<%= currentStatus %>&mediaId=<%= currentMediaId %>" class="btn btn-secondary btn-sm">
           Next →
         </a>
       <% } %>

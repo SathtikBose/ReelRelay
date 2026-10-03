@@ -47,8 +47,14 @@ router.post("/webhook", (req, res) => {
         bodyBytes: rawBody ? rawBody.length : 0,
         object: req.body?.object,
       },
-      "Webhook signature mismatch - processing Instagram payload gracefully"
+      "Rejecting webhook with invalid signature"
     );
+    return res.status(401).json({
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Invalid or missing webhook signature",
+      },
+    });
   }
 
   // Fast 200 OK acknowledgement to Meta

@@ -24,7 +24,7 @@ function verifyPassword(inputPassword) {
 // GET /admin/login
 router.get("/login", (req, res) => {
   if (req.session && req.session.isAdmin) {
-    return res.redirect("/admin/reels");
+    return res.redirect("/admin");
   }
 
   const csrfToken = generateToken(req, res);
@@ -51,7 +51,7 @@ router.post("/login", loginLimiter, (req, res) => {
 
   logger.info({ ip: req.ip }, "Successful admin login");
   req.session.isAdmin = true;
-  return res.redirect("/admin/reels");
+  return res.redirect("/admin");
 });
 
 // POST /admin/logout

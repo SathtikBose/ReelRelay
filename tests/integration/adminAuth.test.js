@@ -49,7 +49,7 @@ describe("Admin Authentication Integration", () => {
       expect(res.text).toContain('name="_csrf"');
     });
 
-    it("redirects to /admin/reels if already logged in", async () => {
+    it("redirects to /admin if already logged in", async () => {
       let cookies = {};
       const loginPageRes = await request(app).get("/admin/login");
       cookies = updateCookies(loginPageRes, cookies);
@@ -72,12 +72,12 @@ describe("Admin Authentication Integration", () => {
         .set("Cookie", toCookieHeader(cookies));
 
       expect(redirectRes.status).toBe(302);
-      expect(redirectRes.headers.location).toBe("/admin/reels");
+      expect(redirectRes.headers.location).toBe("/admin");
     });
   });
 
   describe("POST /admin/login", () => {
-    it("logs in successfully with valid password and redirects to /admin/reels", async () => {
+    it("logs in successfully with valid password and redirects to /admin", async () => {
       let cookies = {};
       const loginPageRes = await request(app).get("/admin/login");
       cookies = updateCookies(loginPageRes, cookies);
@@ -94,7 +94,7 @@ describe("Admin Authentication Integration", () => {
         });
 
       expect(res.status).toBe(302);
-      expect(res.headers.location).toBe("/admin/reels");
+      expect(res.headers.location).toBe("/admin");
       expect(res.headers["set-cookie"]).toBeDefined();
     });
 
@@ -121,14 +121,14 @@ describe("Admin Authentication Integration", () => {
 
   describe("Protected Route Middleware", () => {
     it("redirects unauthenticated browser requests to /admin/login", async () => {
-      const res = await request(app).get("/admin/reels");
+      const res = await request(app).get("/admin/instagram/reels");
       expect(res.status).toBe(302);
       expect(res.headers.location).toBe("/admin/login");
     });
 
     it("returns 401 JSON for unauthenticated API requests", async () => {
       const res = await request(app)
-        .get("/admin/api/media")
+        .get("/admin/instagram/api/media")
         .set("Accept", "application/json");
 
       expect(res.status).toBe(401);
@@ -157,7 +157,7 @@ describe("Admin Authentication Integration", () => {
       cookies = updateCookies(loginRes, cookies);
 
       const reelsRes = await request(app)
-        .get("/admin/reels")
+        .get("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(cookies));
 
       cookies = updateCookies(reelsRes, cookies);
@@ -178,7 +178,7 @@ describe("Admin Authentication Integration", () => {
       delete cookies["reelrelay_session.sig"];
 
       const accessRes = await request(app)
-        .get("/admin/reels")
+        .get("/admin/instagram/reels")
         .set("Cookie", toCookieHeader(cookies));
 
       expect(accessRes.status).toBe(302);

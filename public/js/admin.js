@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loadPickerBtn.disabled = true;
 
       try {
-        const res = await fetch("/admin/api/media", {
+        const res = await fetch("/admin/instagram/api/media", {
           headers: { Accept: "application/json" },
         });
         const json = await res.json();

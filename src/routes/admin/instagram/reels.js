@@ -1,8 +1,8 @@
 const express = require("express");
 const { z } = require("zod");
-const { Reel, DEFAULT_DM_TEMPLATE } = require("../../models/Reel");
-const { generateToken } = require("../../middleware/csrf");
-const { logger } = require("../../lib/logger");
+const { Reel, DEFAULT_DM_TEMPLATE } = require("../../../models/Reel");
+const { generateToken } = require("../../../middleware/csrf");
+const { logger } = require("../../../lib/logger");
 
 const router = express.Router();
 
@@ -58,7 +58,7 @@ const ruleInputSchema = z.object({
   permalink: z.string().optional().nullable().default(""),
 });
 
-// GET /admin/reels — List all reel rules
+// GET /admin/instagram/reels — List all reel rules
 router.get("/", async (req, res, next) => {
   try {
     const reels = await Reel.find().sort({ createdAt: -1 }).lean();
@@ -68,6 +68,8 @@ router.get("/", async (req, res, next) => {
       reels,
       csrfToken,
       title: "Reel Rules — ReelRelay",
+      platform: "instagram",
+      section: "rules",
       activeNav: "reels",
     });
   } catch (err) {
@@ -75,7 +77,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// GET /admin/reels/new — New rule form
+// GET /admin/instagram/reels/new — New rule form
 router.get("/new", (req, res) => {
   const csrfToken = generateToken(req, res);
 
@@ -95,11 +97,13 @@ router.get("/new", (req, res) => {
     errors: {},
     csrfToken,
     title: "New Reel Rule — ReelRelay",
+    platform: "instagram",
+    section: "rules",
     activeNav: "reels",
   });
 });
 
-// POST /admin/reels — Create new rule
+// POST /admin/instagram/reels — Create new rule
 router.post("/", async (req, res) => {
   // Normalize alias keys
   const body = {
@@ -132,6 +136,8 @@ router.post("/", async (req, res) => {
       errors: fieldErrors,
       csrfToken,
       title: "New Reel Rule — ReelRelay",
+      platform: "instagram",
+      section: "rules",
       activeNav: "reels",
     });
   }
@@ -146,6 +152,8 @@ router.post("/", async (req, res) => {
         errors: { mediaId: "A rule for this Reel media ID already exists" },
         csrfToken,
         title: "New Reel Rule — ReelRelay",
+        platform: "instagram",
+        section: "rules",
         activeNav: "reels",
       });
     }
@@ -163,7 +171,7 @@ router.post("/", async (req, res) => {
     });
 
     req.session.flash = { type: "success", message: "Rule created successfully" };
-    return res.redirect("/admin/reels");
+    return res.redirect("/admin/instagram/reels");
   } catch (err) {
     logger.error({ err }, "Error creating reel rule");
     const csrfToken = generateToken(req, res);
@@ -173,18 +181,20 @@ router.post("/", async (req, res) => {
       errors: { general: "An unexpected error occurred while saving the rule." },
       csrfToken,
       title: "New Reel Rule — ReelRelay",
+      platform: "instagram",
+      section: "rules",
       activeNav: "reels",
     });
   }
 });
 
-// GET /admin/reels/:id/edit — Edit rule form
+// GET /admin/instagram/reels/:id/edit — Edit rule form
 router.get("/:id/edit", async (req, res, next) => {
   try {
     const rule = await Reel.findById(req.params.id).lean();
     if (!rule) {
       req.session.flash = { type: "error", message: "Rule not found" };
-      return res.redirect("/admin/reels");
+      return res.redirect("/admin/instagram/reels");
     }
 
     const csrfToken = generateToken(req, res);
@@ -194,6 +204,8 @@ router.get("/:id/edit", async (req, res, next) => {
       errors: {},
       csrfToken,
       title: "Edit Reel Rule — ReelRelay",
+      platform: "instagram",
+      section: "rules",
       activeNav: "reels",
     });
   } catch (err) {
@@ -201,7 +213,7 @@ router.get("/:id/edit", async (req, res, next) => {
   }
 });
 
-// POST /admin/reels/:id — Update rule
+// POST /admin/instagram/reels/:id — Update rule
 router.post("/:id", async (req, res, next) => {
   const body = {
     ...req.body,
@@ -234,6 +246,8 @@ router.post("/:id", async (req, res, next) => {
       errors: fieldErrors,
       csrfToken,
       title: "Edit Reel Rule — ReelRelay",
+      platform: "instagram",
+      section: "rules",
       activeNav: "reels",
     });
   }
@@ -258,23 +272,23 @@ router.post("/:id", async (req, res, next) => {
 
     if (!updated) {
       req.session.flash = { type: "error", message: "Rule not found" };
-      return res.redirect("/admin/reels");
+      return res.redirect("/admin/instagram/reels");
     }
 
     req.session.flash = { type: "success", message: "Rule updated successfully" };
-    return res.redirect("/admin/reels");
+    return res.redirect("/admin/instagram/reels");
   } catch (err) {
     return next(err);
   }
 });
 
-// POST /admin/reels/:id/toggle — Activate/pause rule
+// POST /admin/instagram/reels/:id/toggle — Activate/pause rule
 router.post("/:id/toggle", async (req, res, next) => {
   try {
     const rule = await Reel.findById(req.params.id);
     if (!rule) {
       req.session.flash = { type: "error", message: "Rule not found" };
-      return res.redirect("/admin/reels");
+      return res.redirect("/admin/instagram/reels");
     }
 
     rule.active = !rule.active;
@@ -284,13 +298,13 @@ router.post("/:id/toggle", async (req, res, next) => {
       type: "success",
       message: `Rule ${rule.active ? "activated" : "paused"} successfully`,
     };
-    return res.redirect("/admin/reels");
+    return res.redirect("/admin/instagram/reels");
   } catch (err) {
     return next(err);
   }
 });
 
-// POST /admin/reels/:id/delete — Delete rule
+// POST /admin/instagram/reels/:id/delete — Delete rule
 router.post("/:id/delete", async (req, res, next) => {
   try {
     const deleted = await Reel.findByIdAndDelete(req.params.id);
@@ -299,7 +313,7 @@ router.post("/:id/delete", async (req, res, next) => {
     } else {
       req.session.flash = { type: "success", message: "Rule deleted successfully" };
     }
-    return res.redirect("/admin/reels");
+    return res.redirect("/admin/instagram/reels");
   } catch (err) {
     return next(err);
   }

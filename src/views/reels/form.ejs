@@ -1,7 +1,7 @@
 <%- include('../partials/header') %>
 
 <div style="margin-bottom: 24px;">
-  <a href="/admin/reels" style="font-size: 14px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px;">
+  <a href="/admin/instagram/reels" style="font-size: 14px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px;">
     ← Back to Reel Rules
   </a>
   <h1 style="font-size: 24px; font-weight: 700;"><%= isEdit ? 'Edit Reel Rule' : 'New Reel Rule' %></h1>
@@ -16,7 +16,7 @@
   </div>
 <% } %>
 
-<form action="<%= isEdit ? '/admin/reels/' + rule._id : '/admin/reels' %>" method="POST" id="rule-form">
+<form action="<%= isEdit ? '/admin/instagram/reels/' + rule._id : '/admin/instagram/reels' %>" method="POST" id="rule-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   
   <!-- Hidden fields for picker metadata -->
@@ -198,7 +198,7 @@
   </div>
 
   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-    <a href="/admin/reels" class="btn btn-secondary">Cancel</a>
+    <a href="/admin/instagram/reels" class="btn btn-secondary">Cancel</a>
     <button type="submit" class="btn btn-primary">
       <%= isEdit ? 'Save Changes' : 'Create Reel Rule' %>
     </button>
