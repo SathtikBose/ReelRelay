@@ -1,0 +1,92 @@
+<%- include('../../partials/header') %>
+
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+  <div>
+    <h1 style="font-size: 24px; font-weight: 700;">YouTube Video Rules</h1>
+    <p style="color: var(--muted); font-size: 14px;">Automated public comment replies for your YouTube videos and Shorts</p>
+  </div>
+  <div>
+    <a href="/admin/youtube/videos/new" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <span>+</span> New Video Rule
+    </a>
+  </div>
+</div>
+
+<% if (!rules || rules.length === 0) { %>
+  <div class="card empty-state" style="text-align: center; padding: 48px 24px;">
+    <div style="font-size: 40px; margin-bottom: 12px;">▶️</div>
+    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No video rules yet</h3>
+    <p style="color: var(--muted); font-size: 14px; max-width: 480px; margin: 0 auto 20px auto;">
+      Add your first video rule to start automatically replying to viewer comments on YouTube videos and Shorts.
+    </p>
+    <a href="/admin/youtube/videos/new" class="btn btn-primary" style="text-decoration: none;">+ Add Your First Video</a>
+  </div>
+<% } else { %>
+  <div class="reels-grid">
+    <% rules.forEach(function(rule) { %>
+      <% const isRuleActive = rule.active; %>
+      <div class="reel-card card" style="margin-bottom: 0;">
+        <div class="reel-card-header" style="display: flex; gap: 14px; margin-bottom: 12px;">
+          <% if (rule.thumbnailUrl) { %>
+            <img src="<%= rule.thumbnailUrl %>" alt="Video thumbnail" class="reel-thumb" style="width: 100px; height: 56px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background-color: var(--bg);" />
+          <% } else { %>
+            <div class="reel-thumb-placeholder" style="width: 100px; height: 56px; display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: 4px; flex-shrink: 0;">▶️</div>
+          <% } %>
+          <div class="reel-info" style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+              <span class="badge <%= isRuleActive ? 'badge-active' : 'badge-paused' %>">
+                <%= isRuleActive ? 'Active' : 'Paused' %>
+              </span>
+              <% if (rule.isShort) { %>
+                <span class="badge" style="background: rgba(225, 29, 72, 0.15); color: #E11D48; border: 1px solid rgba(225, 29, 72, 0.3);">
+                  ⚡ Short
+                </span>
+              <% } %>
+              <span class="reel-meta" style="font-size: 12px; color: var(--muted); font-family: monospace;">
+                ID: <%= rule.videoId %>
+              </span>
+            </div>
+            <div class="reel-caption" style="font-weight: 600; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= rule.title %>">
+              <%= rule.title || 'Untitled Video' %>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+              <% (rule.keywords || []).forEach(function(kw) { %>
+                <span class="chip" style="font-size: 11px; padding: 2px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px;"><%= kw %></span>
+              <% }); %>
+              <span style="font-size: 11px; color: var(--muted); align-self: center; margin-left: 4px;">
+                (<%= rule.matchMode %> mode)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 13px; color: var(--muted); word-break: break-all; margin-bottom: 12px;">
+          <strong>Link:</strong> 
+          <a href="<%= rule.link %>" target="_blank" rel="noopener noreferrer" style="color: var(--primary);"><%= rule.link %></a>
+        </div>
+
+        <div class="reel-stats" style="display: flex; gap: 16px; font-size: 13px; color: var(--muted); background: var(--bg); padding: 8px 12px; border-radius: var(--input-radius); margin-bottom: 14px;">
+          <span>Matched: <strong style="color: var(--text);"><%= rule.stats?.matched || 0 %></strong></span>
+          <span>Replied: <strong style="color: var(--success);"><%= rule.stats?.replied || 0 %></strong></span>
+          <span>Failed: <strong style="color: <%= (rule.stats?.failed || 0) > 0 ? 'var(--danger)' : 'var(--muted)' %>;"><%= rule.stats?.failed || 0 %></strong></span>
+        </div>
+
+        <div class="reel-actions" style="display: flex; gap: 8px; align-items: center;">
+          <form action="/admin/youtube/videos/<%= rule._id %>/toggle" method="POST" style="margin: 0;">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-secondary btn-sm">
+              <%= isRuleActive ? 'Pause' : 'Activate' %>
+            </button>
+          </form>
+          <a href="/admin/youtube/videos/<%= rule._id %>/edit" class="btn btn-secondary btn-sm" style="text-decoration: none;">Edit</a>
+          <form action="/admin/youtube/videos/<%= rule._id %>/delete" method="POST" style="margin: 0;" data-confirm="Are you sure you want to delete this rule?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger);">Delete</button>
+          </form>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<%- include('../../partials/footer') %>

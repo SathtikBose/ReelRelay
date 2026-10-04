@@ -105,7 +105,7 @@
     </div>
   </div>
 
-  <!-- Placeholder Stats for Y3-Y5 -->
+  <!-- YouTube Dashboard Stats Cards -->
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
     <div class="card" style="margin-bottom: 0; padding: 16px;">
       <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Replies Posted</div>
@@ -113,11 +113,20 @@
     </div>
     <div class="card" style="margin-bottom: 0; padding: 16px;">
       <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Active Video Rules</div>
-      <div style="font-size: 28px; font-weight: 700; color: var(--text);">0</div>
+      <div style="font-size: 28px; font-weight: 700; color: var(--text);">
+        <a href="/admin/youtube/videos" style="text-decoration: none; color: inherit;">
+          <%= typeof activeRulesCount !== 'undefined' ? activeRulesCount : 0 %>
+        </a>
+      </div>
     </div>
     <div class="card" style="margin-bottom: 0; padding: 16px;">
       <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Quota Used Today</div>
-      <div style="font-size: 28px; font-weight: 700; color: var(--primary);">0 / 9,000</div>
+      <div style="font-size: 24px; font-weight: 700; color: var(--primary);">
+        <%= typeof quotaStatus !== 'undefined' ? quotaStatus.quotaUsed : 0 %> / <%= typeof quotaStatus !== 'undefined' ? quotaStatus.quotaBudget.toLocaleString() : '9,000' %>
+      </div>
+      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+        Resets at midnight Pacific
+      </div>
     </div>
     <div class="card" style="margin-bottom: 0; padding: 16px;">
       <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Polling Engine</div>
