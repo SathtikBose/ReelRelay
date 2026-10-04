@@ -11,7 +11,7 @@
 | Y3 | YouTube client, quota tracker, picker & rule CRUD | ☑ | feat(youtube): add YouTube client, quota tracking and video rule management | yt-phase-3 |
 | Y4 | Polling engine & reply pipeline | ☑ | feat(youtube): add polling engine and keyword auto-reply pipeline | yt-phase-4 |
 | Y5 | Activity, dashboard, overview & ops | ☑ | feat(youtube): add activity log, dashboard, quota meter and combined overview | yt-phase-5 |
-| Y6 | Hardening, docs & deployment update | ☐ | | yt-phase-6 |
+| Y6 | Hardening, docs & deployment update | ☑ | chore(youtube): harden module, update docs and deployment configuration | yt-phase-6 |
 | Y7 | Optional enhancements | ☐ | | — |
 
 ---

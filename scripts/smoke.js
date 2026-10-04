@@ -112,6 +112,19 @@ async function runSmokeTests(targetUrl, verifyToken = env.IG_VERIFY_TOKEN) {
     }
   });
 
+  // 7. Unauthenticated Admin Route Protection (Overview & YouTube)
+  await check("GET /admin and /admin/youtube redirect unauthenticated visitors to /admin/login", async () => {
+    const resOverview = await fetch(`${base}/admin`, { redirect: "manual" });
+    if (resOverview.status !== 302 && resOverview.status !== 301) {
+      throw new Error(`Expected redirect (302) from /admin, got ${resOverview.status}`);
+    }
+
+    const resYt = await fetch(`${base}/admin/youtube`, { redirect: "manual" });
+    if (resYt.status !== 302 && resYt.status !== 301) {
+      throw new Error(`Expected redirect (302) from /admin/youtube, got ${resYt.status}`);
+    }
+  });
+
   if (!isSilent) {
     console.log(`\n📊 Smoke Test Summary: ${passed} passed, ${failed} failed.\n`);
   }

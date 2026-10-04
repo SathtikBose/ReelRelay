@@ -35,7 +35,7 @@ describe("Smoke Test Runner Unit/Integration Tests", () => {
     const result = await runSmokeTests(baseUrl, env.IG_VERIFY_TOKEN);
 
     expect(result.success).toBe(true);
-    expect(result.passed).toBe(6);
+    expect(result.passed).toBe(7);
     expect(result.failed).toBe(0);
   });
 
