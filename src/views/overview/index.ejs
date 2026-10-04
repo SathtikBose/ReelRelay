@@ -59,26 +59,70 @@
           <span style="font-size: 24px;">▶️</span>
           <div>
             <h2 class="card-title" style="margin: 0; font-size: 18px;">YouTube</h2>
-            <span class="badge" style="background-color: rgba(107, 112, 128, 0.15); color: var(--muted); margin-top: 2px;">
-              Not connected
-            </span>
+            <% if (youtube.connected) { %>
+              <span class="badge badge-active" style="margin-top: 2px;">
+                <span class="status-dot" style="margin-right: 4px;"></span> Active (<%= youtube.channelTitle %>)
+              </span>
+            <% } else if (youtube.status === 'needs_reauth') { %>
+              <span class="badge" style="background-color: rgba(220, 38, 38, 0.15); color: var(--danger); margin-top: 2px;">
+                Re-auth Required
+              </span>
+            <% } else { %>
+              <span class="badge" style="background-color: rgba(107, 112, 128, 0.15); color: var(--muted); margin-top: 2px;">
+                Not connected
+              </span>
+            <% } %>
           </div>
         </div>
-        <a href="/admin/youtube" class="btn btn-primary btn-sm">Connect YouTube</a>
+        <% if (youtube.connected) { %>
+          <a href="/admin/youtube" class="btn btn-secondary btn-sm">Open Dashboard →</a>
+        <% } else { %>
+          <a href="/admin/youtube" class="btn btn-primary btn-sm">Connect YouTube</a>
+        <% } %>
       </div>
 
-      <div style="padding: 20px; background-color: var(--bg); border-radius: var(--input-radius); text-align: center; margin-bottom: 16px;">
-        <p style="font-size: 14px; color: var(--muted); margin-bottom: 12px;">
-          Automatically reply to viewer comments on YouTube videos and Shorts with links and personalized messages.
-        </p>
-        <span class="badge" style="background-color: rgba(225, 29, 72, 0.12); color: #E11D48; font-weight: 600;">
-          Coming in Phase Y2 (OAuth Connect)
-        </span>
-      </div>
+      <% if (youtube.connected) { %>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <div style="background-color: var(--bg); padding: 12px; border-radius: var(--input-radius);">
+            <div style="font-size: 12px; color: var(--muted);">Replies (7d)</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--text);"><%= youtube.stats.replied7Days %></div>
+          </div>
+          <div style="background-color: var(--bg); padding: 12px; border-radius: var(--input-radius);">
+            <div style="font-size: 12px; color: var(--muted);">Failed / Deferred</div>
+            <div style="font-size: 20px; font-weight: 700; color: <%= (youtube.stats.failedTotal + youtube.stats.deferredTotal) > 0 ? 'var(--warning)' : 'var(--text)' %>;">
+              <%= youtube.stats.failedTotal %> / <%= youtube.stats.deferredTotal %>
+            </div>
+          </div>
+          <div style="background-color: var(--bg); padding: 12px; border-radius: var(--input-radius);">
+            <div style="font-size: 12px; color: var(--muted);">Active Rules</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--text);"><%= youtube.stats.activeRules %></div>
+          </div>
+          <div style="background-color: var(--bg); padding: 12px; border-radius: var(--input-radius);">
+            <div style="font-size: 12px; color: var(--muted);">Quota Today</div>
+            <div style="font-size: 16px; font-weight: 600; color: var(--text);">
+              <%= youtube.stats.quotaUsedToday %> / <%= youtube.stats.quotaBudget.toLocaleString() %>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <div style="padding: 20px; background-color: var(--bg); border-radius: var(--input-radius); text-align: center; margin-bottom: 16px;">
+          <p style="font-size: 14px; color: var(--muted); margin-bottom: 12px;">
+            Automatically reply to viewer comments on YouTube videos and Shorts with links and personalized messages.
+          </p>
+          <a href="/admin/youtube/oauth/start" class="btn btn-primary btn-sm">
+            ▶️ Connect Channel Now
+          </a>
+        </div>
+      <% } %>
     </div>
 
-    <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; justify-content: flex-end;">
-      <a href="/admin/youtube" class="btn btn-secondary btn-sm">View YouTube Module →</a>
+    <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+      <% if (youtube.connected) { %>
+        <a href="/admin/youtube/videos" class="btn btn-secondary btn-sm">Manage Videos</a>
+        <a href="/admin/youtube/activity" class="btn btn-secondary btn-sm">Activity Log</a>
+      <% } else { %>
+        <a href="/admin/youtube" class="btn btn-secondary btn-sm">View YouTube Module →</a>
+      <% } %>
     </div>
   </div>
 </div>
@@ -87,7 +131,10 @@
 <div class="card">
   <div class="card-header">
     <h2 class="card-title">Recent Activity Across Platforms</h2>
-    <a href="/admin/instagram/activity" class="btn btn-secondary btn-sm">View Full Log →</a>
+    <div style="display: flex; gap: 8px;">
+      <a href="/admin/instagram/activity" class="btn btn-secondary btn-sm">Instagram Log</a>
+      <a href="/admin/youtube/activity" class="btn btn-secondary btn-sm">YouTube Log</a>
+    </div>
   </div>
 
   <% if (!recentActivity || recentActivity.length === 0) { %>
@@ -120,18 +167,20 @@
                 <%= new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
               </td>
               <td style="padding: 10px 12px; font-weight: 500;">
-                @<%= item.commenterUsername || item.author || 'unknown' %>
+                <%= item.platform === 'instagram' && !item.recipientOrAuthor.startsWith('@') ? '@' : '' %><%= item.recipientOrAuthor %>
               </td>
               <td style="padding: 10px 12px;">
                 <span class="chip" style="font-size: 11px; padding: 2px 8px;">
-                  <%= item.matchedKeyword || '—' %>
+                  <%= item.matchedKeyword || item.keyword || '—' %>
                 </span>
               </td>
               <td style="padding: 10px 12px;">
                 <% if (item.status === 'sent' || item.status === 'posted') { %>
-                  <span class="badge badge-active">Sent</span>
+                  <span class="badge badge-active"><%= item.status === 'posted' ? 'Posted' : 'Sent' %></span>
                 <% } else if (item.status === 'failed') { %>
                   <span class="badge" style="background-color: rgba(220, 38, 38, 0.15); color: var(--danger);">Failed</span>
+                <% } else if (item.status === 'deferred') { %>
+                  <span class="badge" style="background-color: rgba(217, 119, 6, 0.15); color: var(--warning);">Deferred</span>
                 <% } else { %>
                   <span class="badge badge-paused"><%= item.status %></span>
                 <% } %>

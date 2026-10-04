@@ -1,0 +1,149 @@
+<%- include('../../partials/header') %>
+
+<div style="margin-bottom: 24px;">
+  <h1 style="font-size: 24px; font-weight: 700;">YouTube Settings</h1>
+  <p style="color: var(--muted); font-size: 14px;">Channel authorization, quota management, polling engine, and log maintenance</p>
+</div>
+
+<!-- 1. YouTube Channel Connection Card -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">1. Connected Channel</h2>
+    <% if (ytStatus && ytStatus.connected) { %>
+      <span class="badge badge-active">Active</span>
+    <% } else if (ytStatus && ytStatus.status === 'needs_reauth') { %>
+      <span class="badge" style="background-color: rgba(220, 38, 38, 0.15); color: var(--danger);">Re-auth Required</span>
+    <% } else { %>
+      <span class="badge badge-paused">Not Connected</span>
+    <% } %>
+  </div>
+
+  <% if (ytStatus && ytStatus.connected) { %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Channel Title</div>
+        <div style="font-size: 15px; font-weight: 600; color: var(--text);"><%= ytStatus.channelTitle %></div>
+      </div>
+
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Channel ID</div>
+        <div style="font-size: 13px; font-family: monospace; color: var(--muted);"><%= ytStatus.channelId %></div>
+      </div>
+
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Connected Since</div>
+        <div style="font-size: 14px; color: var(--text);">
+          <%= ytStatus.connectedAt ? new Date(ytStatus.connectedAt).toLocaleDateString() : 'Active' %>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Uploads Playlist</div>
+        <div style="font-size: 13px; font-family: monospace; color: var(--muted);"><%= ytStatus.uploadsPlaylistId || 'Cached' %></div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 16px;">
+      <a href="/admin/youtube/oauth/start" class="btn btn-secondary btn-sm">
+        🔄 Reconnect / Switch Channel
+      </a>
+
+      <form action="/admin/youtube/disconnect" method="POST" style="margin: 0;" data-confirm="Are you sure you want to disconnect your YouTube channel? Automated replies will stop.">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger);">
+          Disconnect Channel
+        </button>
+      </form>
+    </div>
+  <% } else { %>
+    <div style="padding: 20px 0;">
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">
+        No YouTube channel is currently connected. Connect a Google account with YouTube channel access to enable automated comment replies.
+      </p>
+      <a href="/admin/youtube/oauth/start" class="btn btn-primary">
+        ▶️ Connect YouTube Channel
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<!-- 2. Quota & Polling Configuration Card -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">2. Quota & Polling Engine</h2>
+    <span class="badge <%= config.pollEnabled ? 'badge-active' : 'badge-paused' %>">
+      <%= config.pollEnabled ? 'Polling Active' : 'Polling Paused' %>
+    </span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px;">
+    <div style="background-color: var(--bg); padding: 14px; border-radius: var(--input-radius);">
+      <div style="font-size: 12px; color: var(--muted);">Daily YouTube Quota</div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--primary); margin-top: 2px;">
+        <%= quotaStatus ? quotaStatus.quotaUsed : 0 %> / <%= config.dailyQuotaBudget.toLocaleString() %> units
+      </div>
+      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+        Resets at 00:00 Pacific Time (PST/PDT)
+      </div>
+    </div>
+
+    <div style="background-color: var(--bg); padding: 14px; border-radius: var(--input-radius);">
+      <div style="font-size: 12px; color: var(--muted);">Hourly Reply Cap</div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 2px;">
+        <%= config.maxRepliesPerHour %> replies / hour
+      </div>
+      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+        Protection against spam detection
+      </div>
+    </div>
+
+    <div style="background-color: var(--bg); padding: 14px; border-radius: var(--input-radius);">
+      <div style="font-size: 12px; color: var(--muted);">Reply Jitter Delay</div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 2px;">
+        <%= (config.replyDelayMinMs / 1000).toFixed(1) %>s – <%= (config.replyDelayMaxMs / 1000).toFixed(1) %>s
+      </div>
+      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+        Randomized natural response delay
+      </div>
+    </div>
+  </div>
+
+  <div style="background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 16px;">
+    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Adaptive Polling Schedule:</h3>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted);">
+      <li>• <strong>Fresh Videos (&lt; 48 hours old):</strong> Polled every 3 minutes</li>
+      <li>• <strong>Recent Videos (&lt; 7 days old):</strong> Polled every 15 minutes</li>
+      <li>• <strong>Older Videos (&ge; 7 days old):</strong> Polled every 60 minutes</li>
+      <li>• <strong>Base Scheduler Interval:</strong> Every <%= config.baseIntervalSec %> seconds</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 3. Log Maintenance & Data Purge Card -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">3. Activity Log Maintenance</h2>
+    <span style="font-size: 13px; color: var(--muted);">Database records: <%= totalLogs %></span>
+  </div>
+
+  <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+    Purge completed and skipped reply logs to free database storage. Pending deferred replies are always preserved until processed.
+  </p>
+
+  <form action="/admin/youtube/settings/purge-logs" method="POST" data-confirm="Are you sure you want to purge these YouTube activity logs? This action cannot be undone.">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <select name="retention" class="form-select" style="max-width: 260px;">
+        <option value="90">Logs older than 90 days</option>
+        <option value="30" selected>Logs older than 30 days</option>
+        <option value="7">Logs older than 7 days</option>
+        <option value="all">All completed/failed logs</option>
+      </select>
+      <button type="submit" class="btn btn-secondary" style="color: var(--danger);">
+        🗑️ Purge Logs
+      </button>
+    </div>
+  </form>
+</div>
+
+<%- include('../../partials/footer') %>

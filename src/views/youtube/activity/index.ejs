@@ -1,0 +1,176 @@
+<%- include('../../partials/header') %>
+
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+  <div>
+    <h1 style="font-size: 24px; font-weight: 700;">YouTube Activity Log</h1>
+    <p style="color: var(--muted); font-size: 14px;">Total records: <%= totalLogs %></p>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card" style="padding: 14px; margin-bottom: 20px;">
+  <form action="/admin/youtube/activity" method="GET" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+    <div style="flex: 1; min-width: 140px;">
+      <label for="status-filter" style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Status</label>
+      <select id="status-filter" name="status" class="form-select" style="padding: 6px 10px; font-size: 14px;">
+        <option value="all" <%= selectedStatus === 'all' ? 'selected' : '' %>>All Statuses</option>
+        <option value="posted" <%= selectedStatus === 'posted' ? 'selected' : '' %>>Posted</option>
+        <option value="failed" <%= selectedStatus === 'failed' ? 'selected' : '' %>>Failed</option>
+        <option value="deferred" <%= selectedStatus === 'deferred' ? 'selected' : '' %>>Deferred</option>
+        <option value="skipped" <%= selectedStatus === 'skipped' ? 'selected' : '' %>>Skipped</option>
+        <option value="processing" <%= selectedStatus === 'processing' ? 'selected' : '' %>>Processing</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 180px;">
+      <label for="video-filter" style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Video</label>
+      <select id="video-filter" name="videoId" class="form-select" style="padding: 6px 10px; font-size: 14px;">
+        <option value="all" <%= selectedVideoId === 'all' ? 'selected' : '' %>>All Videos</option>
+        <% (distinctVideoIds || []).forEach(function(vId) { %>
+          <option value="<%= vId %>" <%= selectedVideoId === vId ? 'selected' : '' %>>
+            <%= vId %>
+          </option>
+        <% }); %>
+      </select>
+    </div>
+
+    <div style="align-self: flex-end;">
+      <button type="submit" class="btn btn-secondary btn-sm" style="height: 38px;">Filter</button>
+      <% if (selectedStatus !== 'all' || selectedVideoId !== 'all') { %>
+        <a href="/admin/youtube/activity" class="btn btn-secondary btn-sm" style="height: 38px;">Reset</a>
+      <% } %>
+    </div>
+  </form>
+</div>
+
+<!-- Activity Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <% if (!logs || logs.length === 0) { %>
+    <div class="empty-state">
+      <h3>No activity found</h3>
+      <p>No comment replies match the selected filters.</p>
+    </div>
+  <% } else { %>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border); background-color: var(--bg); color: var(--muted);">
+            <th style="padding: 12px 14px;">Time</th>
+            <th style="padding: 12px 14px;">Author</th>
+            <th style="padding: 12px 14px;">Comment & Details</th>
+            <th style="padding: 12px 14px;">Keyword</th>
+            <th style="padding: 12px 14px;">Status</th>
+            <th style="padding: 12px 14px; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% const now = Date.now(); const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000; %>
+          <% logs.forEach(function(log) { %>
+            <% const commentTime = new Date(log.commentedAt || log.createdAt).getTime(); %>
+            <% const isEligibleForRetry = (log.status === 'failed' || log.status === 'deferred') && (now - commentTime < SEVEN_DAYS_MS); %>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 12px 14px; white-space: nowrap; color: var(--muted); font-size: 13px;">
+                <%= new Date(log.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) %>
+              </td>
+              <td style="padding: 12px 14px; font-weight: 500;">
+                <%= log.authorName || 'Viewer' %>
+                <div style="font-size: 11px; color: var(--muted); font-weight: normal; margin-top: 2px;">
+                  <a href="https://www.youtube.com/watch?v=<%= log.videoId %>" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">
+                    <%= log.videoId %>
+                  </a>
+                </div>
+              </td>
+              <td style="padding: 12px 14px; max-width: 280px;">
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= log.commentText %></div>
+                
+                <% if (log.replyText) { %>
+                  <div style="font-size: 12px; color: var(--muted); margin-top: 4px; padding: 4px 6px; background-color: var(--bg); border-radius: 4px;">
+                    ↳ <em><%= log.replyText %></em>
+                  </div>
+                <% } %>
+
+                <% if (log.errorMessage) { %>
+                  <details style="margin-top: 4px; font-size: 12px; color: var(--danger);">
+                    <summary style="cursor: pointer;">Error info (<%= log.errorCode || 'error' %>)</summary>
+                    <div style="padding: 4px 6px; background: rgba(220, 38, 38, 0.08); border-radius: 4px; margin-top: 2px;">
+                      <%= log.errorMessage %>
+                    </div>
+                  </details>
+                <% } %>
+                
+                <% if (log.skipReason) { %>
+                  <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+                    Skip reason: <%= log.skipReason %>
+                  </div>
+                <% } %>
+
+                <div style="margin-top: 4px; font-size: 11px;">
+                  <a href="https://www.youtube.com/watch?v=<%= log.videoId %>&lc=<%= log.commentId %>" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none;">
+                    ↗ View comment on YouTube
+                  </a>
+                </div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <% if (log.matchedKeyword) { %>
+                  <span class="chip" style="font-size: 11px; padding: 2px 8px;"><%= log.matchedKeyword %></span>
+                <% } else { %>
+                  <span style="color: var(--muted); font-size: 12px;">—</span>
+                <% } %>
+              </td>
+              <td style="padding: 12px 14px;">
+                <% if (log.status === 'posted') { %>
+                  <span class="badge badge-active">Posted</span>
+                <% } else if (log.status === 'failed') { %>
+                  <span class="badge" style="background: rgba(220, 38, 38, 0.15); color: var(--danger);">Failed</span>
+                <% } else if (log.status === 'deferred') { %>
+                  <span class="badge" style="background: rgba(217, 119, 6, 0.15); color: var(--warning);">Deferred</span>
+                <% } else if (log.status === 'skipped') { %>
+                  <span class="badge badge-paused">Skipped</span>
+                <% } else { %>
+                  <span class="badge" style="background: rgba(108, 92, 231, 0.15); color: var(--primary);"><%= log.status %></span>
+                <% } %>
+              </td>
+              <td style="padding: 12px 14px; text-align: right; white-space: nowrap;">
+                <% if (isEligibleForRetry) { %>
+                  <form action="/admin/youtube/activity/<%= log._id %>/retry" method="POST" style="margin: 0; display: inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-secondary btn-sm" title="Retry sending reply (available within 7 days of comment)">
+                      🔄 Retry
+                    </button>
+                  </form>
+                <% } else if (log.status === 'failed' || log.status === 'deferred') { %>
+                  <span style="font-size: 11px; color: var(--muted);" title="Older than 7 days">Expired (>7d)</span>
+                <% } else { %>
+                  <span style="color: var(--muted); font-size: 12px;">—</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<!-- Pagination Bar -->
+<% if (totalPages > 1) { %>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+    <div style="font-size: 13px; color: var(--muted);">
+      Page <%= currentPage %> of <%= totalPages %>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <% if (currentPage > 1) { %>
+        <a href="/admin/youtube/activity?page=<%= currentPage - 1 %>&status=<%= selectedStatus %>&videoId=<%= selectedVideoId %>" class="btn btn-secondary btn-sm">
+          ← Previous
+        </a>
+      <% } %>
+      <% if (currentPage < totalPages) { %>
+        <a href="/admin/youtube/activity?page=<%= currentPage + 1 %>&status=<%= selectedStatus %>&videoId=<%= selectedVideoId %>" class="btn btn-secondary btn-sm">
+          Next →
+        </a>
+      <% } %>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../../partials/footer') %>

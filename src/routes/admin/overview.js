@@ -1,5 +1,6 @@
 const express = require("express");
 const { getDashboardData } = require("../../services/statsService");
+const ytStatsService = require("../../services/youtube/statsService");
 const { generateToken } = require("../../middleware/csrf");
 
 const router = express.Router();
@@ -7,31 +8,39 @@ const router = express.Router();
 // GET /admin — Overview Dashboard
 router.get("/", async (req, res, next) => {
   try {
-    const data = await getDashboardData();
-    const csrfToken = generateToken(req, res);
+    const [igData, ytData, combinedActivity] = await Promise.all([
+      getDashboardData(),
+      ytStatsService.getYtDashboardData(),
+      ytStatsService.getCombinedRecentActivity(10),
+    ]);
 
-    const formattedRecentActivity = (data.recentActivity || []).map((item) => ({
-      ...item,
-      platform: "instagram",
-    }));
+    const csrfToken = generateToken(req, res);
 
     return res.render("overview/index", {
       instagram: {
-        stats: data.stats,
-        tokenStatus: data.tokenStatus,
-        alerts: data.alerts,
+        stats: igData.stats,
+        tokenStatus: igData.tokenStatus,
+        alerts: igData.alerts,
       },
       youtube: {
-        connected: false,
-        configured: false,
+        connected: !!ytData.ytStatus?.connected,
+        configured: !!ytData.ytStatus?.configured,
+        status: ytData.ytStatus?.status,
+        channelTitle: ytData.ytStatus?.channelTitle,
+        quotaStatus: ytData.quotaStatus,
         stats: {
-          posted7Days: 0,
-          failedTotal: 0,
-          activeRules: 0,
-          quotaUsedToday: 0,
+          repliedToday: ytData.stats.repliedToday,
+          replied7Days: ytData.stats.replied7Days,
+          failedTotal: ytData.stats.failedTotal,
+          deferredTotal: ytData.stats.deferredTotal,
+          activeRules: ytData.stats.activeRules,
+          totalRules: ytData.stats.totalRules,
+          quotaUsedToday: ytData.quotaStatus?.quotaUsed || 0,
+          quotaBudget: ytData.quotaStatus?.quotaBudget || 9000,
         },
+        alerts: ytData.alerts,
       },
-      recentActivity: formattedRecentActivity,
+      recentActivity: combinedActivity,
       csrfToken,
       title: "Overview — ReelRelay",
       platform: "overview",

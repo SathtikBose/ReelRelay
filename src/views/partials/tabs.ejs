@@ -1,16 +1,45 @@
 <%
   const currentPlatform = typeof platform !== 'undefined' ? platform : (typeof activeNav !== 'undefined' && activeNav === 'overview' ? 'overview' : 'instagram');
+  
+  let igDotClass = "";
+  let igTitle = "Instagram Connected";
+  if (typeof instagram !== 'undefined' && instagram.tokenStatus) {
+    if (!instagram.tokenStatus.exists || instagram.tokenStatus.isExpired) {
+      igDotClass = "dot-error";
+      igTitle = "Instagram Token Expired / Missing";
+    } else if (instagram.tokenStatus.daysLeft !== null && instagram.tokenStatus.daysLeft < 10) {
+      igDotClass = "dot-warning";
+      igTitle = `Instagram Token Expiring in ${instagram.tokenStatus.daysLeft}d`;
+    }
+  }
+
+  let ytDotClass = "dot-inactive";
+  let ytTitle = "YouTube Not Connected";
+  const ytInfo = typeof ytStatus !== 'undefined' ? ytStatus : (typeof youtube !== 'undefined' ? youtube : null);
+  if (ytInfo) {
+    if (ytInfo.connected) {
+      ytDotClass = "";
+      ytTitle = `YouTube Connected: ${ytInfo.channelTitle || 'Active'}`;
+      if (typeof quotaStatus !== 'undefined' && quotaStatus.isExceeded) {
+        ytDotClass = "dot-warning";
+        ytTitle = "YouTube Quota Budget Reached";
+      }
+    } else if (ytInfo.status === 'needs_reauth') {
+      ytDotClass = "dot-error";
+      ytTitle = "YouTube Re-authentication Required";
+    }
+  }
 %>
 <nav class="platform-tabs" aria-label="Platform selection">
   <a href="/admin" class="platform-tab tab-overview <%= currentPlatform === 'overview' ? 'active' : '' %>" <%- currentPlatform === 'overview' ? 'aria-current="page"' : '' %>>
     <span>Overview</span>
   </a>
   <a href="/admin/instagram/dashboard" class="platform-tab tab-instagram <%= currentPlatform === 'instagram' ? 'active' : '' %>" <%- currentPlatform === 'instagram' ? 'aria-current="page"' : '' %>>
-    <span class="platform-status-dot dot-instagram" title="Instagram Connected"></span>
+    <span class="platform-status-dot dot-instagram <%= igDotClass %>" title="<%= igTitle %>"></span>
     <span>Instagram</span>
   </a>
   <a href="/admin/youtube" class="platform-tab tab-youtube <%= currentPlatform === 'youtube' ? 'active' : '' %>" <%- currentPlatform === 'youtube' ? 'aria-current="page"' : '' %>>
-    <span class="platform-status-dot dot-youtube dot-inactive" title="YouTube Not Connected"></span>
+    <span class="platform-status-dot dot-youtube <%= ytDotClass %>" title="<%= ytTitle %>"></span>
     <span>YouTube</span>
   </a>
 </nav>
