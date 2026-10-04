@@ -7,7 +7,7 @@
 |-------|------|--------|--------|-----|
 | Y0 | Google setup (human) | ☐ | — | — |
 | Y1 | Platform tab shell & route namespacing | ☑ | refactor(admin): introduce platform tabs and namespace Instagram routes | yt-phase-1 |
-| Y2 | YouTube config, models & OAuth connect | ☐ | | yt-phase-2 |
+| Y2 | YouTube config, models & OAuth connect | ☑ | feat(youtube): add Google OAuth connection with encrypted credential storage | yt-phase-2 |
 | Y3 | YouTube client, quota tracker, picker & rule CRUD | ☐ | | yt-phase-3 |
 | Y4 | Polling engine & reply pipeline | ☐ | | yt-phase-4 |
 | Y5 | Activity, dashboard, overview & ops | ☐ | | yt-phase-5 |

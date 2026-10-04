@@ -1,0 +1,129 @@
+<%- include('../partials/header') %>
+
+<% if (!ytStatus || !ytStatus.connected) { %>
+  <!-- Not Connected State -->
+  <div class="youtube-connect-container" style="max-width: 680px; margin: 0 auto; padding-top: 10px;">
+    <% if (ytStatus && ytStatus.status === 'needs_reauth') { %>
+      <div style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 14px 18px; border-radius: var(--input-radius); margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 18px;">⚠️</span>
+        <div>
+          <strong>Re-authentication Required:</strong> <%= ytStatus.lastError || 'Your YouTube connection has expired or was revoked.' %>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="card" style="text-align: center; padding: 40px 24px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">▶️</div>
+      <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--text);">
+        Connect YouTube Channel
+      </h1>
+      <p style="color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+        ReelRelay replies automatically to viewer comments on your YouTube videos and Shorts when they use your trigger keywords.
+      </p>
+
+      <div style="background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 20px; text-align: left; margin-bottom: 28px;">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text);">
+          Permissions & Security:
+        </h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--muted);">
+          <li style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="color: var(--success); font-weight: bold;">✓</span>
+            <span><strong>Encrypted Storage:</strong> Refresh tokens are AES-256-GCM encrypted and access tokens stay in memory.</span>
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="color: var(--success); font-weight: bold;">✓</span>
+            <span><strong>Minimal Permissions:</strong> Only requests permission to view your channel details and post replies.</span>
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="color: var(--success); font-weight: bold;">✓</span>
+            <span><strong>PKCE & State Protected:</strong> RFC 7636 Proof Key for Code Exchange secures the authorization flow.</span>
+          </li>
+        </ul>
+      </div>
+
+      <% if (ytStatus && !ytStatus.configured) { %>
+        <div style="background: rgba(217, 119, 6, 0.1); border: 1px solid var(--warning); color: var(--warning); padding: 12px 16px; border-radius: var(--input-radius); margin-bottom: 20px; font-size: 13px; text-align: left;">
+          <strong>Configuration Notice:</strong> Google OAuth credentials (<code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code>) are not configured in your <code>.env</code> file. Please configure them in Google Cloud Console first.
+        </div>
+      <% } %>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <a href="/admin/youtube/oauth/start" class="btn btn-primary" style="padding: 12px 32px; font-size: 15px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span>▶️</span> Connect YouTube with Google
+        </a>
+      </div>
+    </div>
+  </div>
+
+<% } else { %>
+  <!-- Connected Dashboard State -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <h1 style="font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+        <span>YouTube Dashboard</span>
+        <span class="badge badge-active">Connected</span>
+      </h1>
+      <p style="color: var(--muted); font-size: 14px;">Automated comment replies for <strong><%= ytStatus.channelTitle %></strong></p>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <form action="/admin/youtube/disconnect" method="POST" style="margin: 0;" data-confirm="Are you sure you want to disconnect this YouTube channel? Automated replies will stop.">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger);">
+          Disconnect Channel
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Channel Info Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Connected Channel</h2>
+      <span class="badge badge-active">Active</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Channel Title</div>
+        <div style="font-size: 16px; font-weight: 600; color: var(--text);"><%= ytStatus.channelTitle %></div>
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Channel ID</div>
+        <div style="font-size: 14px; font-family: monospace; color: var(--muted);"><%= ytStatus.channelId %></div>
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Connected Since</div>
+        <div style="font-size: 14px; color: var(--text);">
+          <%= ytStatus.connectedAt ? new Date(ytStatus.connectedAt).toLocaleDateString() : 'Today' %>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">Uploads Playlist</div>
+        <div style="font-size: 14px; font-family: monospace; color: var(--muted);"><%= ytStatus.uploadsPlaylistId || 'Cached' %></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Placeholder Stats for Y3-Y5 -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div class="card" style="margin-bottom: 0; padding: 16px;">
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Replies Posted</div>
+      <div style="font-size: 28px; font-weight: 700; color: var(--success);">0</div>
+    </div>
+    <div class="card" style="margin-bottom: 0; padding: 16px;">
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Active Video Rules</div>
+      <div style="font-size: 28px; font-weight: 700; color: var(--text);">0</div>
+    </div>
+    <div class="card" style="margin-bottom: 0; padding: 16px;">
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Quota Used Today</div>
+      <div style="font-size: 28px; font-weight: 700; color: var(--primary);">0 / 9,000</div>
+    </div>
+    <div class="card" style="margin-bottom: 0; padding: 16px;">
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Polling Engine</div>
+      <div style="font-size: 15px; font-weight: 600; color: var(--muted); margin-top: 8px;">Phase Y4</div>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

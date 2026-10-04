@@ -141,15 +141,15 @@ describe("Admin Navigation, Platform Tabs & Namespacing Integration (Phase Y1)",
     });
   });
 
-  describe("3. YouTube Placeholder (/admin/youtube)", () => {
-    it("renders the YouTube placeholder shell when authenticated", async () => {
+  describe("3. YouTube Platform Section (/admin/youtube)", () => {
+    it("renders the YouTube platform shell when authenticated", async () => {
       const res = await request(app)
         .get("/admin/youtube")
         .set("Cookie", toCookieHeader(authCookies));
 
       expect(res.status).toBe(200);
-      expect(res.text).toContain("YouTube Auto-Reply Module");
       expect(res.text).toContain("Connect YouTube Channel");
+      expect(res.text).toContain("Connect YouTube with Google");
       expect(res.text).toContain('aria-current="page"');
     });
 

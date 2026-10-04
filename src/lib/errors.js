@@ -65,6 +65,20 @@ class InstagramApiError extends AppError {
   }
 }
 
+class YouTubeApiError extends AppError {
+  /**
+   * @param {string} message
+   * @param {number} statusCode
+   * @param {string} [ytReason="unknown"]
+   * @param {string} [errorType="transient"]
+   */
+  constructor(message, statusCode, ytReason = "unknown", errorType = "transient") {
+    super(message, statusCode, "YOUTUBE_API_ERROR");
+    this.ytReason = ytReason;
+    this.errorType = errorType; // "transient" | "permanent" | "auth" | "quota"
+  }
+}
+
 module.exports = {
   AppError,
   ValidationError,
@@ -73,4 +87,5 @@ module.exports = {
   NotFoundError,
   ConflictError,
   InstagramApiError,
+  YouTubeApiError,
 };
