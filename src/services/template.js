@@ -24,12 +24,13 @@ function render(template, context = {}) {
   }
 
   const link = context.link || "";
-  const username = context.username ? context.username.replace(/^@/, "") : "there";
+  const rawAuthor = context.author || context.username;
+  const username = rawAuthor ? rawAuthor.replace(/^@/, "") : "there";
   const keyword = context.keyword || "";
 
   let output = template
     .replace(/\{\{\s*link\s*\}\}/gi, link)
-    .replace(/\{\{\s*username\s*\}\}/gi, username)
+    .replace(/\{\{\s*(?:username|author)\s*\}\}/gi, username)
     .replace(/\{\{\s*keyword\s*\}\}/gi, keyword);
 
   output = sanitizeControlChars(output);

@@ -4,6 +4,7 @@ const { createApp } = require("./app");
 const { connectDb, disconnectDb } = require("./lib/db");
 const { bootstrapToken } = require("./services/tokenService");
 const { initScheduler, stopScheduler } = require("./services/scheduler");
+const ytScheduler = require("./services/youtube/scheduler");
 const { subscribeAppWebhooks } = require("./services/instagramClient");
 const { queue } = require("./lib/queue");
 
@@ -16,6 +17,7 @@ async function startServer() {
     await connectDb();
     await bootstrapToken();
     initScheduler();
+    ytScheduler.initScheduler();
 
     try {
       await subscribeAppWebhooks();
@@ -40,6 +42,7 @@ async function startServer() {
 async function handleShutdown(signal = "SIGTERM") {
   logger.info(`Received ${signal}. Shutting down gracefully...`);
   stopScheduler();
+  ytScheduler.stopScheduler();
 
   // Pause queue from accepting new tasks and wait for in-flight tasks to complete
   try {
