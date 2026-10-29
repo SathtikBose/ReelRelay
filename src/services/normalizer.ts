@@ -56,8 +56,8 @@ export function normalizeWebhookPayload(
 
   const raw = payload as RawWebhookPayload;
 
-  if (raw.object !== "instagram") {
-    logger.debug({ object: raw.object }, "Ignoring non-instagram webhook object");
+  if (raw.object !== "instagram" && raw.object !== "page") {
+    logger.debug({ object: raw.object }, "Ignoring non-instagram/page webhook object");
     return [];
   }
 

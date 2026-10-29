@@ -169,6 +169,30 @@ webhookRouter.post("/webhook", async (c) => {
 
   const isValid = await verifyWebhookSignature(rawBody, signatureHeader, appSecret);
 
+  // Parse JSON payload
+  let payload: unknown;
+  let text = "";
+  try {
+    text = new TextDecoder().decode(rawBody);
+    payload = JSON.parse(text);
+  } catch (err) {
+    logger.error({ err }, "Malformed JSON body in webhook payload");
+    return c.json({ error: "Malformed JSON payload" }, 400);
+  }
+
+  // Audit incoming webhook in events_log for live diagnostics
+  if (c.env.DB) {
+    try {
+      const objName = (payload as any)?.object || "unknown";
+      const eventType = isValid ? `webhook_${objName}` : "webhook_invalid_sig";
+      await c.env.DB.prepare(
+        "INSERT INTO events_log (event_type, payload, created_at) VALUES (?, ?, datetime('now'))"
+      ).bind(eventType, text.slice(0, 3000)).run();
+    } catch (logErr) {
+      logger.error({ logErr }, "Failed to write audit event to events_log");
+    }
+  }
+
   if (!isValid) {
     logger.warn(
       {
@@ -187,16 +211,6 @@ webhookRouter.post("/webhook", async (c) => {
       },
       401
     );
-  }
-
-  // Parse JSON payload
-  let payload: unknown;
-  try {
-    const text = new TextDecoder().decode(rawBody);
-    payload = JSON.parse(text);
-  } catch (err) {
-    logger.error({ err }, "Malformed JSON body in webhook payload");
-    return c.json({ error: "Malformed JSON payload" }, 400);
   }
 
   // Immediately respond 200 OK to Meta

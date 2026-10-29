@@ -98,8 +98,15 @@ export async function sendPrivateReplyDm(
   }
 
   const version = (env.GRAPH_API_VERSION || env.IG_API_VERSION || DEFAULT_GRAPH_VERSION).replace(/^\//, "");
-  // Standard Meta Graph API private reply endpoint
-  const url = `https://graph.facebook.com/${version}/${accountId}/messages`;
+
+  // Determine primary and fallback Graph API hosts based on token format
+  // IGAA tokens from Instagram Login use graph.instagram.com
+  // EAA tokens from Facebook Login use graph.facebook.com
+  const isIgToken = token.startsWith("IGAA") || token.startsWith("IGA");
+  const primaryHost = isIgToken ? "https://graph.instagram.com" : "https://graph.facebook.com";
+  const fallbackHost = isIgToken ? "https://graph.facebook.com" : "https://graph.instagram.com";
+
+  let url = `${primaryHost}/${version}/${accountId}/messages`;
 
   const payload = {
     recipient: { comment_id: commentId },
@@ -110,7 +117,7 @@ export async function sendPrivateReplyDm(
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
   try {
-    const response = await fetchFn(url, {
+    let response = await fetchFn(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -125,6 +132,34 @@ export async function sendPrivateReplyDm(
       data = (await response.json()) as Record<string, unknown>;
     } catch {
       data = {};
+    }
+
+    // If 401 Unauthorized with token parsing issue, retry with fallback host
+    if (response.status === 401) {
+      const errObj = (data?.error as Record<string, unknown>) || {};
+      const rawMsg = (errObj.message as string) || "";
+      if (rawMsg.includes("Cannot parse access token") || rawMsg.includes("OAuthException")) {
+        const fallbackUrl = `${fallbackHost}/${version}/${accountId}/messages`;
+        logger.info({ fallbackUrl }, "Retrying private reply with fallback Graph API host");
+        try {
+          const fallbackRes = await fetchFn(fallbackUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+          const fallbackData = (await fallbackRes.json()) as Record<string, unknown>;
+          if (fallbackRes.ok || (fallbackData?.error as any)?.code !== 190) {
+            response = fallbackRes;
+            data = fallbackData;
+          }
+        } catch (fbErr) {
+          logger.warn({ fbErr }, "Fallback Graph host request failed");
+        }
+      }
     }
 
     if (!response.ok) {
