@@ -40,8 +40,9 @@ app.get("/health", (c) => {
 // Mount Webhook routes (/webhook GET and POST)
 app.route("/", webhookRouter);
 
-// Mount API routes (/api/*)
+// Mount API routes (/api/* and backward-compatible /admin/instagram/api/*)
 app.route("/api", apiRouter);
+app.route("/admin/instagram/api", apiRouter);
 
 // GET /login — Serves login page from static assets
 app.get("/login", async (c) => {

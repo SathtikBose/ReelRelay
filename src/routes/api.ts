@@ -188,6 +188,8 @@ apiRouter.post("/keywords", async (c) => {
       dmMessage: body.dmMessage,
       active: body.active !== false,
       caption: body.caption || "",
+      thumbnailUrl: body.thumbnailUrl || "",
+      permalink: body.permalink || "",
     });
 
     return c.json({ success: true, data: created }, 201);
@@ -311,6 +313,110 @@ apiRouter.get("/stats", async (c) => {
       totalFailed,
     },
   });
+});
+
+// GET /api/media — Fetches recent reels from Instagram Graph API for the Reel Picker modal
+apiRouter.get("/media", async (c) => {
+  const token = c.env.META_ACCESS_TOKEN || c.env.IG_ACCESS_TOKEN;
+  if (!token) {
+    return c.json(
+      {
+        error: {
+          code: "TOKEN_MISSING",
+          message: "Instagram Access Token (META_ACCESS_TOKEN) is not configured in environment.",
+        },
+      },
+      400
+    );
+  }
+
+  const accountId = c.env.IG_BUSINESS_ACCOUNT_ID || c.env.IG_USER_ID;
+  const version = (c.env.GRAPH_API_VERSION || c.env.IG_API_VERSION || "v23.0").replace(/^\//, "");
+  const limit = Math.min(parseInt(c.req.query("limit") || "25", 10), 50);
+
+  const fields = "id,caption,media_type,media_product_type,permalink,thumbnail_url,timestamp";
+  let items: any[] = [];
+  let paging: any = null;
+
+  try {
+    // 1. Try Instagram Graph API endpoint (works with Instagram User / Creator tokens)
+    let res = await fetch(`https://graph.instagram.com/me/media?fields=${fields}&limit=${limit}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    let data: any = await res.json();
+
+    // 2. If Instagram endpoint returned error and accountId is available, try Facebook Graph API
+    if ((!res.ok || data.error) && accountId) {
+      const fbUrl = `https://graph.facebook.com/${version}/${accountId}/media?fields=${fields}&limit=${limit}`;
+      const fbRes = await fetch(fbUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const fbData: any = await fbRes.json();
+      if (fbRes.ok && fbData.data) {
+        res = fbRes;
+        data = fbData;
+      }
+    }
+
+    if (!res.ok || data.error) {
+      const msg = data.error?.message || "Failed to fetch media from Instagram";
+      logger.error({ error: data.error }, "Instagram media fetch error");
+      return c.json(
+        {
+          error: {
+            code: "MEDIA_FETCH_FAILED",
+            message: msg,
+          },
+        },
+        502
+      );
+    }
+
+    items = data.data || [];
+    paging = data.paging || null;
+  } catch (err: any) {
+    logger.error({ err }, "Exception fetching Instagram media");
+    return c.json(
+      {
+        error: {
+          code: "NETWORK_ERROR",
+          message: err.message || "Network error fetching media from Instagram",
+        },
+      },
+      502
+    );
+  }
+
+  // Filter to REELS or VIDEO
+  const reelsOnly = items.filter(
+    (item) => item.media_product_type === "REELS" || item.media_type === "VIDEO" || !item.media_type
+  );
+
+  // Check existing rules in D1 to mark which reels already have rules configured
+  let existingIds = new Set<string>();
+  if (c.env.DB) {
+    try {
+      const existing = await c.env.DB.prepare("SELECT media_id FROM keywords").all<{ media_id: string }>();
+      if (existing.results) {
+        existingIds = new Set(existing.results.map((r) => r.media_id));
+      }
+    } catch {
+      existingIds = new Set();
+    }
+  }
+
+  const formattedData = (reelsOnly.length > 0 ? reelsOnly : items).map((item) => ({
+    id: item.id,
+    caption: item.caption || "",
+    mediaType: item.media_type || "VIDEO",
+    mediaProductType: item.media_product_type || "REELS",
+    permalink: item.permalink || "",
+    thumbnailUrl: item.thumbnail_url || null,
+    timestamp: item.timestamp || null,
+    hasRule: existingIds.has(item.id),
+  }));
+
+  return c.json({ data: formattedData, paging });
 });
 
 export default apiRouter;
