@@ -63,6 +63,8 @@ All production secrets are stored securely in Cloudflare's encrypted key-value s
 
 > ℹ️ *Backward-compatibility note:* The application also accepts legacy variable names (`IG_APP_ID`, `IG_APP_SECRET`, `IG_VERIFY_TOKEN`, `IG_USER_ID`, `IG_ACCESS_TOKEN`, `IG_API_VERSION`) automatically.
 
+> 📱 **Need help getting your Meta tokens, App IDs, and setting up webhooks?** Follow our step-by-step **[Meta Developer Console Checklist](docs/META_SETUP_CHECKLIST.md)**.
+
 ---
 
 ## 🛠️ Configuring Secrets in Production
