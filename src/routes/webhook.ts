@@ -153,8 +153,9 @@ webhookRouter.get("/webhook", (c) => {
  * POST /webhook — Meta Instagram Event Notification Receiver
  */
 webhookRouter.post("/webhook", async (c) => {
-  const signatureHeader =
-    c.req.header("x-hub-signature-256") || c.req.header("x-hub-signature");
+  const sig256 = c.req.header("x-hub-signature-256");
+  const sigSha1 = c.req.header("x-hub-signature");
+  const signatureHeader = sig256 || sigSha1;
 
   const appSecret = c.env.META_APP_SECRET || c.env.IG_APP_SECRET;
 
@@ -185,9 +186,17 @@ webhookRouter.post("/webhook", async (c) => {
     try {
       const objName = (payload as any)?.object || "unknown";
       const eventType = isValid ? `webhook_${objName}` : "webhook_invalid_sig";
+      const auditPayload = JSON.stringify({
+        valid: isValid,
+        sig256: sig256 || null,
+        sigSha1: sigSha1 || null,
+        secretConfigured: !!appSecret,
+        secretLen: appSecret ? appSecret.trim().replace(/^["']|["']$/g, "").length : 0,
+        body: payload,
+      });
       await c.env.DB.prepare(
         "INSERT INTO events_log (event_type, payload, created_at) VALUES (?, ?, datetime('now'))"
-      ).bind(eventType, text.slice(0, 3000)).run();
+      ).bind(eventType, auditPayload.slice(0, 3500)).run();
     } catch (logErr) {
       logger.error({ logErr }, "Failed to write audit event to events_log");
     }
