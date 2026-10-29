@@ -60,16 +60,27 @@
       <form id="login-form">
         <div class="form-group">
           <label for="password" class="form-label">Master Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            class="form-input"
-            placeholder="••••••••••••"
-            required
-            autocomplete="current-password"
-            autofocus
-          />
+          <div style="position: relative;">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="••••••••••••"
+              required
+              autocomplete="current-password"
+              autofocus
+              style="padding-right: 44px;"
+            />
+            <button
+              type="button"
+              id="toggle-pwd-btn"
+              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 4px;"
+              title="Show password"
+            >
+              👁️
+            </button>
+          </div>
         </div>
 
         <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; margin-top: 8px;">
@@ -83,6 +94,14 @@
     const form = document.getElementById("login-form");
     const errorAlert = document.getElementById("error-alert");
     const submitBtn = document.getElementById("submit-btn");
+    const pwdInput = document.getElementById("password");
+    const togglePwdBtn = document.getElementById("toggle-pwd-btn");
+
+    togglePwdBtn.addEventListener("click", () => {
+      const isPwd = pwdInput.type === "password";
+      pwdInput.type = isPwd ? "text" : "password";
+      togglePwdBtn.textContent = isPwd ? "🙈" : "👁️";
+    });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -90,7 +109,7 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "Verifying...";
 
-      const password = document.getElementById("password").value;
+      const password = pwdInput.value.trim();
 
       try {
         const res = await fetch("/api/auth/login", {

@@ -78,7 +78,7 @@ export function verifyAdminPassword(
   if (!input || !expected) {
     return false;
   }
-  return constantTimeEqual(input, expected);
+  return constantTimeEqual(input.trim(), expected.trim());
 }
 
 /**
