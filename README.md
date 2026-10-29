@@ -141,6 +141,30 @@ npm test
 
 ---
 
+## 🚀 Cloudflare Deployment (CI/CD)
+
+For comprehensive, beginner step-by-step instructions, see the **[Cloudflare Deployment Guide](docs/CLOUDFLARE_DEPLOY.md)**.
+
+### Quick Deployment Checklist:
+1. **Create Remote D1 Database:**
+   ```bash
+   npx wrangler d1 create reelrelay-db
+   ```
+   Paste the returned `database_id` into your [`wrangler.jsonc`](wrangler.jsonc).
+2. **Apply Remote Migrations:**
+   ```bash
+   npx wrangler d1 migrations apply DB --remote
+   ```
+3. **Connect GitHub in Cloudflare Dashboard:**
+   - Go to **Workers & Pages** > **Create application** > **Import a repository**.
+   - Select `SathtikBose/ReelRelay`, set branch `main`, build command `npm run typecheck`, deploy command `npx wrangler deploy`.
+4. **Add Secrets:**
+   - Run `npx wrangler secret put <NAME>` for all 7 required secrets (or configure in Cloudflare Dashboard > Settings > Variables and Secrets).
+5. **Auto-Deploy on Git Push:**
+   - Every time you push to `main` (`git push origin main`), Cloudflare automatically builds, verifies types, and deploys your changes to edge servers worldwide in ~20 seconds.
+
+---
+
 ## 📁 Repository Structure
 
 ```
