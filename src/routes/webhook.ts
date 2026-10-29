@@ -2,6 +2,14 @@ import { Hono } from "hono";
 import { Bindings } from "../index";
 import { verifyHandshakeToken, verifyWebhookSignature } from "../lib/crypto";
 import { normalizeWebhookPayload, CommentEvent } from "../services/normalizer";
+import {
+  getKeywordRuleByMediaId,
+  claimCommentForProcessing,
+  hasUserReceivedDmForReel,
+  updateCommentStatus,
+  incrementRuleStats,
+} from "../lib/db";
+import { matchComment } from "../services/matcher";
 import { logger } from "../lib/logger";
 
 const webhookRouter = new Hono<{ Bindings: Bindings }>();
@@ -28,8 +36,90 @@ export async function processCommentEvents(
       "Enqueued Instagram comment event for delivery pipeline"
     );
 
-    // In Phase 3 (D1) and Phase 4 (DM Sending), this calls the database deduplication,
-    // keyword matcher, and Meta Graph API private reply service.
+    if (!env.DB) {
+      logger.warn({}, "D1 Database binding (env.DB) is not available");
+      continue;
+    }
+
+    try {
+      // 1. Look up rule for this reel
+      const rule = await getKeywordRuleByMediaId(env.DB, event.mediaId);
+      if (!rule) {
+        logger.debug(
+          { commentId: event.commentId, mediaId: event.mediaId },
+          "No rule configured for reel media ID"
+        );
+        continue;
+      }
+
+      // 2. Check if rule is active
+      if (!rule.active) {
+        logger.debug(
+          { commentId: event.commentId, mediaId: event.mediaId, ruleId: rule.id },
+          "Reel rule is paused/inactive"
+        );
+        continue;
+      }
+
+      // 3. Match comment text against keywords
+      const matchedKeyword = matchComment(event.text, rule.keyword, rule.match_mode);
+      if (!matchedKeyword) {
+        logger.debug(
+          { commentId: event.commentId, mediaId: event.mediaId, text: event.text },
+          "Comment did not match rule keywords"
+        );
+        continue;
+      }
+
+      // 4. Claim the comment atomically in D1 (idempotency key: commentId)
+      const claimed = await claimCommentForProcessing(env.DB, {
+        commentId: event.commentId,
+        mediaId: event.mediaId,
+        commenterId: event.commenterId,
+        commenterUsername: event.commenterUsername,
+        text: event.text,
+        matchedKeyword,
+      });
+
+      if (!claimed) {
+        logger.info(
+          { commentId: event.commentId },
+          "Comment already claimed/processed by pipeline (idempotent ignore)"
+        );
+        continue;
+      }
+
+      // 5. Per-user-per-reel deduplication check
+      if (event.commenterId) {
+        const alreadySent = await hasUserReceivedDmForReel(
+          env.DB,
+          event.mediaId,
+          event.commenterId,
+          event.commentId
+        );
+        if (alreadySent) {
+          logger.info(
+            { commentId: event.commentId, commenterId: event.commenterId, mediaId: event.mediaId },
+            "Skipping duplicate DM for already-messaged user on this reel"
+          );
+          await updateCommentStatus(env.DB, event.commentId, {
+            status: "skipped",
+            skipReason: "duplicate_user",
+          });
+          continue;
+        }
+      }
+
+      // Increment matched stats counter
+      await incrementRuleStats(env.DB, rule.id, "matched");
+
+      // Note: Phase 4 will dispatch the Meta Graph API DM here.
+    } catch (err) {
+      logger.error(
+        { err, commentId: event.commentId },
+        "Unexpected error processing comment in pipeline"
+      );
+    }
   }
 }
 
