@@ -10,6 +10,7 @@ import {
   incrementRuleStats,
 } from "../lib/db";
 import { matchComment } from "../services/matcher";
+import { dispatchCommentReply } from "../services/instagram";
 import { logger } from "../lib/logger";
 
 const webhookRouter = new Hono<{ Bindings: Bindings }>();
@@ -113,7 +114,8 @@ export async function processCommentEvents(
       // Increment matched stats counter
       await incrementRuleStats(env.DB, rule.id, "matched");
 
-      // Note: Phase 4 will dispatch the Meta Graph API DM here.
+      // Dispatch private reply DM via Meta Graph API
+      await dispatchCommentReply(event, rule, env);
     } catch (err) {
       logger.error(
         { err, commentId: event.commentId },
