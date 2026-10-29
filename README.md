@@ -4,6 +4,12 @@
 
 ---
 
+## ⚡ Is It Truly 24/7?
+
+**Yes, absolutely.** Cloudflare Workers execute on Cloudflare's serverless edge infrastructure distributed across 300+ cities worldwide. Unlike traditional free containers on Render, Heroku, or basic virtual machines, Cloudflare Workers never go to sleep, never suffer cold starts, and have no idling timeouts. The Cloudflare Workers free plan provides **100,000 requests per day every day forever**, meaning ReelRelay responds to incoming Instagram webhooks in under 50 milliseconds 24 hours a day, 7 days a week, 365 days a year—without needing UptimeRobot or any external keep-alive pingers.
+
+---
+
 ## 🏗️ Architecture
 
 ```
@@ -41,6 +47,7 @@
 * **Database:** Cloudflare D1 (Native Serverless SQLite at the edge)
 * **Static Dashboard:** Cloudflare Workers Static Assets (`./public`)
 * **Security:** Web Crypto HMAC signed session cookies, constant-time comparisons, brute-force login rate limiting, secret token redaction in all logs.
+* **Legal Documentation:** Static HTML pages served on GitHub Pages (`/docs/`).
 
 ---
 
@@ -112,7 +119,7 @@ If you prefer using the browser:
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/your-username/ReelRelay.git
+git clone https://github.com/SathtikBose/ReelRelay.git
 cd ReelRelay
 npm install
 ```
@@ -167,35 +174,79 @@ For comprehensive, beginner step-by-step instructions, see the **[Cloudflare Dep
 
 ---
 
+## 🧪 Go-Live End-to-End Test Script
+
+1. **Add a Rule:** In your dashboard (`https://reelrelay.<subdomain>.workers.dev/`), click **Add Rule**. Set Media ID to `*` (matches all reels) or your specific Reel ID, Keyword to `LINK`, DM Message to `Hey {username}! Here is your guide:`, Link to `https://example.com`, and click **Save**.
+2. **Start Live Logs:** In your terminal, run `npx wrangler tail` to watch real-time events.
+3. **Comment on Instagram:** From a test Instagram account (authorized tester if in Development Mode), post a comment on your reel: *"Send me the LINK!"*.
+4. **Confirm DM:** Check your inbox on Instagram. The direct message will arrive within 2-3 seconds with the personalized message and link.
+5. **Verify Logs:** Look at `wrangler tail` to see verified webhook receipt, keyword match, and successful private reply delivery.
+
+*(For detailed testing steps and edge cases, see **[docs/GO_LIVE_AND_TROUBLESHOOTING.md](docs/GO_LIVE_AND_TROUBLESHOOTING.md)**).*
+
+---
+
+## 🩺 Troubleshooting Reference
+
+| Issue | Root Cause | Fix |
+| :--- | :--- | :--- |
+| **Meta Webhook Verify Fails** | `META_VERIFY_TOKEN` mismatch | Verify token string matches in Cloudflare secrets and Meta console. |
+| **403 Webhook Signature Error** | `META_APP_SECRET` incorrect | Copy exact App Secret from Meta App Settings > Basic and update secret. |
+| **No DM Sent to Commenter** | App is in Development Mode without Tester role | Add commenter as an Instagram Tester in Meta App Roles, or submit for App Review. |
+| **Stale Comment Error** | Comment older than 7 days | Meta Graph API policy window prohibits automated private replies to comments >7 days old. |
+| **Duplicate DMs Blocked** | Idempotency working as intended | Cloudflare D1 deduplicates comment IDs using `INSERT OR IGNORE` to prevent spamming users. |
+| **Session Expired OAuth Error** | Access token expired | Switch to a permanent System User Token with expiration "Never" per [Meta Setup Checklist](docs/META_SETUP_CHECKLIST.md). |
+
+---
+
+## 🗑️ Decommissioning Render & UptimeRobot
+
+Now that your bot is running serverless on Cloudflare Workers, you can safely turn off your old hosting setup:
+
+1. **Remove Render Service:**
+   - Open [Render Dashboard](https://dashboard.render.com/) > Click your old ReelRelay service > **Settings** > Scroll to bottom > Click **Delete Web Service**.
+2. **Remove UptimeRobot Monitor:**
+   - Open [UptimeRobot](https://uptimerobot.com/dashboard) > Find your monitor > Click settings > Click **Delete**.
+   - Cloudflare Workers never sleep and need no keep-alive pings.
+
+---
+
 ## 📁 Repository Structure
 
 ```
 ReelRelay/
+├── docs/
+│   ├── CLOUDFLARE_DEPLOY.md     # Cloudflare CI/CD & D1 step-by-step deploy guide
+│   ├── META_SETUP_CHECKLIST.md  # Meta Developer Console & token generation checklist
+│   ├── GO_LIVE_AND_TROUBLESHOOTING.md # Testing script, troubleshooting & cleanup
+│   ├── privacy.html             # GitHub Pages: Privacy Policy (Meta App Review)
+│   ├── terms.html               # GitHub Pages: Terms of Service
+│   └── data-deletion.html       # GitHub Pages: User Data Deletion Instructions
 ├── migrations/
-│   └── 0001_init.sql         # D1 SQL schema (keywords, processed_comments, events_log)
+│   └── 0001_init.sql            # D1 SQLite schema (keywords, processed_comments, events_log)
 ├── public/
-│   ├── index.html            # Mobile-responsive admin dashboard UI
-│   ├── login.html            # Admin login screen
-│   ├── css/style.css         # UI design system & responsive styling
-│   └── js/admin.js           # Live DM template preview & interaction logic
+│   ├── index.html               # Mobile-responsive admin dashboard UI
+│   ├── login.html               # Admin login screen
+│   ├── css/style.css            # UI design system & responsive styling
+│   └── js/admin.js              # Live DM template preview & interaction logic
 ├── src/
-│   ├── index.ts              # Worker entry point & route registration (Hono)
+│   ├── index.ts                 # Worker entry point & route registration (Hono)
 │   ├── lib/
-│   │   ├── auth.ts           # Signed session cookies & login rate limiting
-│   │   ├── crypto.ts         # Web Crypto HMAC-SHA256 & timing-safe equality
-│   │   ├── db.ts             # D1 Database queries & atomic deduplication
-│   │   └── logger.ts         # Structured logging with token sanitization
+│   │   ├── auth.ts              # Signed session cookies & login rate limiting
+│   │   ├── crypto.ts            # Web Crypto HMAC-SHA256 & timing-safe equality
+│   │   ├── db.ts                # D1 Database queries & atomic deduplication
+│   │   └── logger.ts            # Structured logging with token sanitization
 │   ├── routes/
-│   │   ├── api.ts            # Authenticated keywords CRUD & activity API
-│   │   └── webhook.ts        # Meta verification & event receiver (/webhook)
+│   │   ├── api.ts               # Authenticated keywords CRUD & activity API
+│   │   └── webhook.ts           # Meta verification & event receiver (/webhook)
 │   └── services/
-│       ├── instagram.ts      # Meta Graph API DM sender & retry engine
-│       ├── matcher.ts        # Case-insensitive Unicode keyword matcher
-│       ├── normalizer.ts     # Webhook comment payload parser & filters
-│       └── template.ts       # Personalized DM template generator
-├── tests/                    # Vitest test suite (native in-memory SQLite)
-├── wrangler.jsonc            # Cloudflare Worker & D1 binding configuration
-├── .dev.vars.example         # Example local environment variables file
+│       ├── instagram.ts         # Meta Graph API DM sender & retry engine
+│       ├── matcher.ts           # Case-insensitive Unicode keyword matcher
+│       ├── normalizer.ts        # Webhook comment payload parser & filters
+│       └── template.ts          # Personalized DM template generator
+├── tests/                       # Vitest test suite (native in-memory SQLite)
+├── wrangler.jsonc               # Cloudflare Worker & D1 binding configuration
+├── .dev.vars.example            # Example local environment variables file
 └── package.json
 ```
 
