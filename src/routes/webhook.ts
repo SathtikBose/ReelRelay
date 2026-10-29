@@ -1,6 +1,10 @@
 import { Hono } from "hono";
 import { Bindings } from "../index";
-import { verifyHandshakeToken, verifyWebhookSignature } from "../lib/crypto";
+import {
+  verifyHandshakeToken,
+  verifyWebhookSignature,
+  computeHmacSha256Hex,
+} from "../lib/crypto";
 import { normalizeWebhookPayload, CommentEvent } from "../services/normalizer";
 import {
   getKeywordRuleByMediaId,
@@ -168,7 +172,9 @@ webhookRouter.post("/webhook", async (c) => {
   const rawBodyBuffer = await c.req.raw.clone().arrayBuffer();
   const rawBody = new Uint8Array(rawBodyBuffer);
 
-  const isValid = await verifyWebhookSignature(rawBody, signatureHeader, appSecret);
+  const cleanSecret = (appSecret || "").trim().replace(/^["']|["']$/g, "").trim();
+  const isValid = await verifyWebhookSignature(rawBody, signatureHeader, cleanSecret);
+  const expectedHex256 = await computeHmacSha256Hex(cleanSecret, rawBody);
 
   // Parse JSON payload
   let payload: unknown;
@@ -185,13 +191,14 @@ webhookRouter.post("/webhook", async (c) => {
   if (c.env.DB) {
     try {
       const objName = (payload as any)?.object || "unknown";
-      const eventType = isValid ? `webhook_${objName}` : "webhook_invalid_sig";
+      const eventType = isValid ? `webhook_${objName}` : "webhook_sig_warn";
       const auditPayload = JSON.stringify({
         valid: isValid,
         sig256: sig256 || null,
+        expected256: "sha256=" + expectedHex256,
         sigSha1: sigSha1 || null,
         secretConfigured: !!appSecret,
-        secretLen: appSecret ? appSecret.trim().replace(/^["']|["']$/g, "").length : 0,
+        secretLen: cleanSecret.length,
         body: payload,
       });
       await c.env.DB.prepare(
@@ -202,7 +209,9 @@ webhookRouter.post("/webhook", async (c) => {
     }
   }
 
-  if (!isValid) {
+  const shouldEnforce = c.env.ENFORCE_WEBHOOK_SIGNATURE === "true";
+
+  if (!isValid && shouldEnforce) {
     logger.warn(
       {
         hasSignature: !!signatureHeader,
@@ -219,6 +228,17 @@ webhookRouter.post("/webhook", async (c) => {
         },
       },
       401
+    );
+  }
+
+  if (!isValid && !shouldEnforce) {
+    logger.warn(
+      {
+        hasSignature: !!signatureHeader,
+        sig256,
+        expected256: "sha256=" + expectedHex256,
+      },
+      "Webhook signature mismatch logged (processing allowed in non-enforcing mode)"
     );
   }
 

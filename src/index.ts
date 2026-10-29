@@ -15,6 +15,7 @@ export type Bindings = {
   META_ACCESS_TOKEN?: string;
   IG_BUSINESS_ACCOUNT_ID?: string;
   GRAPH_API_VERSION?: string;
+  ENFORCE_WEBHOOK_SIGNATURE?: string;
   // Backward compatibility bindings
   IG_APP_ID?: string;
   IG_APP_SECRET?: string;

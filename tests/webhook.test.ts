@@ -13,6 +13,7 @@ const mockEnv = {
   META_APP_SECRET: TEST_SECRET,
   META_VERIFY_TOKEN: TEST_VERIFY_TOKEN,
   IG_BUSINESS_ACCOUNT_ID: TEST_OWN_USER_ID,
+  ENFORCE_WEBHOOK_SIGNATURE: "true",
 };
 
 describe("Phase 2 Webhook Routes", () => {
