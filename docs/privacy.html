@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — ReelRelay</title>
+  <style>
+    :root {
+      --bg: #F8F9FD;
+      --surface: #FFFFFF;
+      --text: #1E2028;
+      --muted: #64748B;
+      --primary: #6366F1;
+      --border: #E2E8F0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0F172A;
+        --surface: #1E293B;
+        --text: #F8FAFC;
+        --muted: #94A3B8;
+        --primary: #818CF8;
+        --border: #334155;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .meta { color: var(--muted); font-size: 14px; }
+    h2 { font-size: 20px; font-weight: 700; margin: 28px 0 12px; color: var(--text); }
+    p, ul { margin-bottom: 16px; font-size: 15px; }
+    ul { padding-left: 24px; }
+    li { margin-bottom: 8px; }
+    a { color: var(--primary); text-decoration: none; font-weight: 500; }
+    a:hover { text-decoration: underline; }
+    .badge {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    nav { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 14px; display: flex; gap: 20px; flex-wrap: wrap; }
+    .notice {
+      background: rgba(99, 102, 241, 0.05);
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      margin: 20px 0;
+      font-size: 14px;
+      border-radius: 0 8px 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">ReelRelay Legal Documentation</div>
+      <h1>Privacy Policy</h1>
+      <div class="meta">Last Updated: October 29, 2026</div>
+    </header>
+
+    <div class="notice">
+      <strong>Overview:</strong> ReelRelay is an automated Instagram comment-to-DM service. We only process public comments left on our Instagram Reels to deliver links you requested via direct message. We never sell your personal information.
+    </div>
+
+    <h2>1. Introduction</h2>
+    <p>ReelRelay ("we", "our", or "us") provides automation tools for Instagram creators. This Privacy Policy outlines how we collect, use, process, and protect your information when you interact with our Instagram Reels and automated messaging services.</p>
+
+    <h2>2. Information We Process</h2>
+    <p>When you comment on an enabled Instagram Reel, Meta's Instagram Graph API sends us real-time webhook event notifications. We process:</p>
+    <ul>
+      <li><strong>Public Comment Data:</strong> Your public Instagram comment text, comment ID, and the ID of the Reel commented on.</li>
+      <li><strong>User Identifiers:</strong> Your Instagram username and Instagram-scoped user ID as provided by Meta.</li>
+      <li><strong>Delivery Timestamps:</strong> The date and time the comment was posted and processed.</li>
+    </ul>
+    <p>We do not collect passwords, payment information, physical addresses, private direct messages, or non-public profile details.</p>
+
+    <h2>3. How We Use Your Information</h2>
+    <p>Your information is used strictly and exclusively for the following purposes:</p>
+    <ul>
+      <li><strong>Keyword Matching:</strong> Checking whether your comment contains a creator-specified trigger keyword (such as "LINK", "GUIDE", or "RECIPE").</li>
+      <li><strong>Automated DM Delivery:</strong> Sending a one-time private direct message via the official Meta Instagram Messaging API containing the link or resource you requested.</li>
+      <li><strong>Duplicate Prevention:</strong> Storing unique comment IDs to prevent sending you duplicate or spam direct messages if you comment multiple times on the same Reel.</li>
+    </ul>
+
+    <h2>4. Data Sharing & Third-Party Service Providers</h2>
+    <p><strong>We do not sell, rent, monetize, or share your personal data with third parties or data brokers.</strong></p>
+    <p>We only transmit data to the following infrastructure providers necessary to operate the service:</p>
+    <ul>
+      <li><strong>Meta Platforms, Inc.:</strong> Used via the official Instagram Graph API to receive webhook comment events and deliver direct messages.</li>
+      <li><strong>Cloudflare, Inc.:</strong> Hosts our serverless backend (Cloudflare Workers) and edge database (Cloudflare D1) with industry-standard encryption at rest and in transit.</li>
+    </ul>
+
+    <h2>5. Data Retention & Automatic Purging</h2>
+    <p>We believe in strict data minimization:</p>
+    <ul>
+      <li>Comment IDs, usernames, and delivery timestamps are retained strictly for delivery verification, rate-limiting, and error diagnosis.</li>
+      <li>All activity logs are automatically and permanently purged after <strong>60 days</strong>.</li>
+    </ul>
+
+    <h2>6. User Data Deletion Rights</h2>
+    <p>You have the right to request the immediate deletion of any comment logs or username records associated with your account at any time. To request deletion, please visit our <a href="data-deletion.html">Data Deletion Instructions</a> or contact the administrator directly at <a href="mailto:sathtikbose@gmail.com">sathtikbose@gmail.com</a>.</p>
+
+    <h2>7. Contact Information</h2>
+    <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please contact:</p>
+    <p><strong>Administrator Email:</strong> <a href="mailto:sathtikbose@gmail.com">sathtikbose@gmail.com</a></p>
+
+    <div class="notice" style="border-left-color: var(--muted); font-size: 13px; color: var(--muted);">
+      <em>Disclaimer: This document is provided as an informational privacy policy describing the technical functionality of ReelRelay for Meta App Review and does not constitute formal legal advice.</em>
+    </div>
+
+    <nav>
+      <a href="privacy.html" style="font-weight: 700;">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="data-deletion.html">User Data Deletion</a>
+    </nav>
+  </div>
+</body>
+</html>

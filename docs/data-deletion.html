@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Data Deletion Instructions — ReelRelay</title>
+  <style>
+    :root {
+      --bg: #F8F9FD;
+      --surface: #FFFFFF;
+      --text: #1E2028;
+      --muted: #64748B;
+      --primary: #6366F1;
+      --border: #E2E8F0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0F172A;
+        --surface: #1E293B;
+        --text: #F8FAFC;
+        --muted: #94A3B8;
+        --primary: #818CF8;
+        --border: #334155;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .meta { color: var(--muted); font-size: 14px; }
+    h2 { font-size: 20px; font-weight: 700; margin: 28px 0 12px; color: var(--text); }
+    p, ul, ol { margin-bottom: 16px; font-size: 15px; }
+    ul, ol { padding-left: 24px; }
+    li { margin-bottom: 8px; }
+    a { color: var(--primary); text-decoration: none; font-weight: 500; }
+    a:hover { text-decoration: underline; }
+    .badge {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    nav { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 14px; display: flex; gap: 20px; flex-wrap: wrap; }
+    .notice {
+      background: rgba(99, 102, 241, 0.05);
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      margin: 20px 0;
+      font-size: 14px;
+      border-radius: 0 8px 8px 0;
+    }
+    .step-box {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">ReelRelay Legal Documentation</div>
+      <h1>User Data Deletion Instructions</h1>
+      <div class="meta">Last Updated: October 29, 2026</div>
+    </header>
+
+    <div class="notice">
+      <strong>User Right to Deletion:</strong> In accordance with Meta Platform Terms and global privacy standards (GDPR, CCPA), ReelRelay provides clear, accessible methods for any Instagram user to request the deletion of all data associated with their account.
+    </div>
+
+    <h2>1. What Data ReelRelay Stores</h2>
+    <p>ReelRelay only stores minimal technical identifiers necessary to verify deliveries and prevent duplicate automated direct messages:</p>
+    <ul>
+      <li>Instagram Public Comment ID</li>
+      <li>Instagram Username or Scoped User ID</li>
+      <li>Matched Keyword and Delivery Timestamp</li>
+      <li>Delivery Status Log (success or failure)</li>
+    </ul>
+    <p>We do not store passwords, profile pictures, personal private chat history, or payment details.</p>
+
+    <h2>2. Automatic Data Retention & Purging</h2>
+    <p>All activity logs and processed comment records stored in our Cloudflare D1 database are automatically and permanently purged after <strong>60 days</strong>. You do not need to take any action if you are satisfied with automatic rolling deletion.</p>
+
+    <h2>3. How to Request Manual Data Deletion</h2>
+    <p>If you wish to have all stored records associated with your Instagram account deleted immediately, please follow these steps:</p>
+
+    <div class="step-box">
+      <ol>
+        <li>Send an email to our data privacy administrator at: <a href="mailto:sathtikbose@gmail.com"><strong>sathtikbose@gmail.com</strong></a></li>
+        <li>Use the Subject Line: <code>ReelRelay Data Deletion Request</code></li>
+        <li>In the body of the email, include your <strong>Instagram handle / username</strong> (e.g., <code>@yourusername</code>) and approximate date of the comment.</li>
+      </ol>
+    </div>
+
+    <h2>4. Verification & Processing Timeline</h2>
+    <p>Upon receiving your request:</p>
+    <ul>
+      <li>Our team will query our Cloudflare D1 database for records matching your Instagram handle or associated comment events.</li>
+      <li>All matching rows in the <code>processed_comments</code> and <code>events_log</code> tables will be permanently deleted.</li>
+      <li>You will receive an email confirmation within <strong>48 hours</strong> verifying complete removal.</li>
+    </ul>
+
+    <h2>5. Revoking App Permissions on Instagram</h2>
+    <p>If you previously granted permissions via Meta login, you can revoke access anytime:</p>
+    <ol>
+      <li>Open Instagram on your device or browser and navigate to <strong>Settings</strong>.</li>
+      <li>Go to <strong>Apps and Websites</strong> under your account permissions.</li>
+      <li>Select active apps and tap <strong>Remove</strong> next to ReelRelay.</li>
+    </ol>
+
+    <h2>6. Contact Us</h2>
+    <p>If you have any questions about this process, please reach out to:</p>
+    <p><strong>Administrator:</strong> <a href="mailto:sathtikbose@gmail.com">sathtikbose@gmail.com</a></p>
+
+    <div class="notice" style="border-left-color: var(--muted); font-size: 13px; color: var(--muted);">
+      <em>Disclaimer: This page serves as official user data deletion documentation for Meta App Review compliance.</em>
+    </div>
+
+    <nav>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="data-deletion.html" style="font-weight: 700;">User Data Deletion</a>
+    </nav>
+  </div>
+</body>
+</html>
