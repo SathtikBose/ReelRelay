@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import webhookRouter from "./routes/webhook";
+import apiRouter from "./routes/api";
+import { verifySignedSession } from "./lib/auth";
 
 export type Bindings = {
   DB: D1Database;
@@ -24,7 +26,7 @@ export type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-// GET /health — Health check endpoint for manual checks
+// GET /health — Public health check endpoint for manual checks
 app.get("/health", (c) => {
   return c.json({
     status: "ok",
@@ -35,7 +37,50 @@ app.get("/health", (c) => {
   });
 });
 
-// Mount webhook routes (/webhook GET and POST)
+// Mount Webhook routes (/webhook GET and POST)
 app.route("/", webhookRouter);
+
+// Mount API routes (/api/*)
+app.route("/api", apiRouter);
+
+// GET /login — Serves login page from static assets
+app.get("/login", async (c) => {
+  if (c.env.ASSETS && typeof c.env.ASSETS.fetch === "function") {
+    const url = new URL("/login.html", c.req.url);
+    return c.env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
+  }
+  return c.text("Login page not found", 404);
+});
+
+// GET /admin — Redirects to /
+app.get("/admin", (c) => {
+  return c.redirect("/");
+});
+
+// GET / — Serves authenticated dashboard or redirects to /login
+app.get("/", async (c) => {
+  const cookie = c.req.header("cookie");
+  const secret = c.env.SESSION_SECRET || "";
+  const isAuthed = await verifySignedSession(cookie, secret);
+
+  if (!isAuthed) {
+    return c.redirect("/login");
+  }
+
+  if (c.env.ASSETS && typeof c.env.ASSETS.fetch === "function") {
+    const url = new URL("/index.html", c.req.url);
+    return c.env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
+  }
+
+  return c.text("Dashboard page not found", 404);
+});
+
+// Fallback to static assets (css, js, images)
+app.get("/*", async (c) => {
+  if (c.env.ASSETS && typeof c.env.ASSETS.fetch === "function") {
+    return c.env.ASSETS.fetch(c.req.raw);
+  }
+  return c.notFound();
+});
 
 export default app;

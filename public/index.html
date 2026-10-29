@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReelRelay — Instagram DM Automation</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+    .main-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      width: 100%;
+      flex: 1;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .nav-tab {
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 18px;
+    }
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .preview-card {
+      background: #ECE5DD;
+      border-radius: var(--card-radius);
+      padding: 20px;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+    .preview-bubble {
+      background: #FFFFFF;
+      color: #111B21;
+      padding: 12px 16px;
+      border-radius: 12px 12px 2px 12px;
+      max-width: 85%;
+      font-size: 14px;
+      line-height: 1.45;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      background: var(--surface);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: rgba(0, 0, 0, 0.02);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="logo-group">
+      <span class="logo-text">🚀 ReelRelay</span>
+      <span class="status-pill"><span class="status-dot"></span> Edge Live 24/7</span>
+    </div>
+    <div style="display:flex; align-items:center; gap: 12px;">
+      <a href="/health" target="_blank" class="btn btn-secondary btn-sm" style="font-size:12px;">Health Check</a>
+      <button id="logout-btn" class="btn btn-secondary btn-sm" style="font-size:12px; color: var(--danger);">Logout</button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- Top Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Active Rules</div>
+        <div class="stat-value" id="stat-active-rules">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Comments Matched</div>
+        <div class="stat-value" id="stat-matched" style="color: var(--primary);">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">DMs Sent</div>
+        <div class="stat-value" id="stat-sent" style="color: var(--success);">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Failed</div>
+        <div class="stat-value" id="stat-failed">0</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="rules-tab">Reel Keyword Rules</button>
+      <button class="nav-tab" data-tab="form-tab" id="form-tab-btn">+ New Reel Rule</button>
+      <button class="nav-tab" data-tab="activity-tab">Activity Log</button>
+    </nav>
+
+    <!-- TAB 1: Rules List -->
+    <section id="rules-tab" class="tab-content">
+      <div id="rules-container" class="reels-grid">
+        <div class="card empty-state" style="grid-column: 1 / -1;">
+          <h3>Loading rules...</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Rule Form (Create & Edit) -->
+    <section id="form-tab" class="tab-content" style="display: none;">
+      <div class="card" style="max-width: 720px; margin: 0 auto; padding: 24px;">
+        <h2 id="form-title" style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">Create New Reel Rule</h2>
+        
+        <form id="rule-form">
+          <input type="hidden" id="rule-id" value="">
+
+          <div class="form-group">
+            <label for="media-id" class="form-label">Instagram Reel Media ID</label>
+            <input type="text" id="media-id" class="form-input" placeholder="e.g. 17987654321098765" required>
+            <div class="form-hint">The numeric ID of your Instagram Reel.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="keywords" class="form-label">Trigger Keywords (Comma-separated)</label>
+            <input type="text" id="keywords" class="form-input" placeholder="e.g. link, recipe, guide, course" required>
+            <div class="form-hint">Keywords that trigger this auto-DM (case-insensitive).</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Match Mode</label>
+            <div style="display:flex; gap:16px; font-size:14px; margin-top: 6px;">
+              <label><input type="radio" name="matchMode" value="word" checked> Whole Word (Default)</label>
+              <label><input type="radio" name="matchMode" value="exact"> Exact Comment</label>
+              <label><input type="radio" name="matchMode" value="contains"> Contains Substring</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="link" class="form-label">Destination Link (HTTPS)</label>
+            <input type="url" id="link" class="form-input" placeholder="https://yourwebsite.com/resource" required>
+            <div class="form-hint">The secure link sent inside the Instagram Direct Message.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="dm-message" class="form-label">DM Message Template</label>
+            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm var-chip" data-tag="{{link}}">+ Link</button>
+              <button type="button" class="btn btn-secondary btn-sm var-chip" data-tag="{{username}}">+ Username</button>
+              <button type="button" class="btn btn-secondary btn-sm var-chip" data-tag="{{keyword}}">+ Keyword</button>
+            </div>
+            <textarea id="dm-message" class="form-input" rows="4" style="resize:vertical;">Hey {{username}}! 👋 Here's the link you asked for:&#10;{{link}}</textarea>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:4px;">
+              <span>Max 800 characters per Meta DM limits.</span>
+              <span id="char-counter">0 / 800</span>
+            </div>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="form-group">
+            <label class="form-label">Live DM Preview</label>
+            <div class="preview-card">
+              <div class="preview-bubble" id="preview-bubble"></div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap: 12px; margin-top: 24px;">
+            <button type="submit" id="save-rule-btn" class="btn btn-primary" style="flex:1;">Save Rule</button>
+            <button type="button" id="cancel-form-btn" class="btn btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 3: Activity Log -->
+    <section id="activity-tab" class="tab-content" style="display: none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <h2 style="font-size: 18px; font-weight: 700;">Recent Comment Activity</h2>
+        <button id="refresh-activity-btn" class="btn btn-secondary btn-sm">↻ Refresh</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Commenter</th>
+              <th>Media ID</th>
+              <th>Trigger Keyword</th>
+              <th>Comment Text</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="activity-tbody">
+            <tr>
+              <td colspan="6" style="text-align:center; color:var(--muted); padding: 32px;">Loading activity...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Authentication guard
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          window.location.href = "/login.html";
+        }
+      } catch {
+        window.location.href = "/login.html";
+      }
+    }
+    checkAuth();
+
+    // Tab Switching
+    const tabButtons = document.querySelectorAll(".nav-tab");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    function switchTab(targetId) {
+      tabButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-tab") === targetId);
+      });
+      tabContents.forEach(tab => {
+        tab.style.display = tab.id === targetId ? "block" : "none";
+      });
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tabId = btn.getAttribute("data-tab");
+        switchTab(tabId);
+        if (tabId === "activity-tab") loadActivity();
+      });
+    });
+
+    document.getElementById("cancel-form-btn").addEventListener("click", () => {
+      switchTab("rules-tab");
+    });
+
+    // Logout
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login.html";
+    });
+
+    // Live Preview & Character Counter
+    const dmMessageInput = document.getElementById("dm-message");
+    const linkInput = document.getElementById("link");
+    const previewBubble = document.getElementById("preview-bubble");
+    const charCounter = document.getElementById("char-counter");
+
+    function updatePreview() {
+      const msg = dmMessageInput.value || "";
+      const link = linkInput.value || "https://yourwebsite.com/resource";
+      const rendered = msg
+        .replace(/\{\{\s*link\s*\}\}/gi, link)
+        .replace(/\{\{\s*username\s*\}\}/gi, "alex")
+        .replace(/\{\{\s*keyword\s*\}\}/gi, "link");
+
+      previewBubble.textContent = rendered.slice(0, 800);
+      charCounter.textContent = `${msg.length} / 800`;
+      charCounter.style.color = msg.length > 800 ? "var(--danger)" : "var(--muted)";
+    }
+
+    dmMessageInput.addEventListener("input", updatePreview);
+    linkInput.addEventListener("input", updatePreview);
+    updatePreview();
+
+    // Variable chip buttons
+    document.querySelectorAll(".var-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tag = btn.getAttribute("data-tag");
+        const start = dmMessageInput.selectionStart;
+        const end = dmMessageInput.selectionEnd;
+        dmMessageInput.value = dmMessageInput.value.substring(0, start) + tag + dmMessageInput.value.substring(end);
+        dmMessageInput.focus();
+        dmMessageInput.selectionStart = dmMessageInput.selectionEnd = start + tag.length;
+        updatePreview();
+      });
+    });
+
+    // Load Stats and Rules
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+        if (data.stats) {
+          document.getElementById("stat-active-rules").textContent = data.stats.activeRules;
+          document.getElementById("stat-matched").textContent = data.stats.totalMatched;
+          document.getElementById("stat-sent").textContent = data.stats.totalSent;
+          document.getElementById("stat-failed").textContent = data.stats.totalFailed;
+        }
+      } catch (err) {
+        console.error("Failed to load stats", err);
+      }
+    }
+
+    async function loadRules() {
+      const container = document.getElementById("rules-container");
+      try {
+        const res = await fetch("/api/keywords");
+        const json = await res.json();
+        const rules = json.data || [];
+
+        if (rules.length === 0) {
+          container.innerHTML = `
+            <div class="card empty-state" style="grid-column: 1 / -1; text-align: center; padding: 48px;">
+              <h3>No Reel Rules Configured</h3>
+              <p style="color:var(--muted); margin: 8px 0 20px;">Create your first keyword rule to begin sending automatic DMs to commenters.</p>
+              <button onclick="document.getElementById('form-tab-btn').click()" class="btn btn-primary">+ Add First Rule</button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = rules.map(rule => `
+          <div class="reel-card">
+            <div class="reel-card-header">
+              <div class="reel-thumb-placeholder">🎬</div>
+              <div class="reel-info">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span class="badge ${rule.active ? 'badge-active' : 'badge-paused'}">
+                    ${rule.active ? 'Active' : 'Paused'}
+                  </span>
+                  <span style="font-size:12px; color:var(--muted);">Reel ID: ${rule.media_id}</span>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">
+                  ${rule.keyword.split(',').map(k => `<span class="chip" style="font-size:11px; padding:2px 8px;">${k.trim()}</span>`).join('')}
+                  <span style="font-size:11px; color:var(--muted); align-self:center;">(${rule.match_mode})</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size:13px; color:var(--muted); word-break:break-all; margin: 8px 0;">
+              <strong>Link:</strong> <a href="${rule.link}" target="_blank" rel="noopener noreferrer">${rule.link}</a>
+            </div>
+
+            <div class="reel-stats">
+              <span>Matched: <strong>${rule.matched_count || 0}</strong></span>
+              <span>Sent: <strong style="color:var(--success);">${rule.sent_count || 0}</strong></span>
+              <span>Failed: <strong style="color:${(rule.failed_count || 0) > 0 ? 'var(--danger)' : 'var(--muted)'};">${rule.failed_count || 0}</strong></span>
+            </div>
+
+            <div class="reel-actions" style="margin-top:12px;">
+              <button class="btn btn-secondary btn-sm" onclick="toggleRule(${rule.id})">
+                ${rule.active ? 'Pause' : 'Activate'}
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick='editRule(${JSON.stringify(rule).replace(/'/g, "&#39;")})'>Edit</button>
+              <button class="btn btn-secondary btn-sm" style="color:var(--danger);" onclick="deleteRule(${rule.id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="card empty-state" style="grid-column: 1 / -1; color:var(--danger);">Failed to load rules: ${err.message}</div>`;
+      }
+    }
+
+    // Toggle Rule
+    window.toggleRule = async function(id) {
+      await fetch(`/api/keywords/${id}/toggle`, { method: "POST" });
+      loadRules();
+      loadStats();
+    };
+
+    // Delete Rule
+    window.deleteRule = async function(id) {
+      if (confirm("Are you sure you want to delete this rule?")) {
+        await fetch(`/api/keywords/${id}`, { method: "DELETE" });
+        loadRules();
+        loadStats();
+      }
+    };
+
+    // Edit Rule
+    window.editRule = function(rule) {
+      document.getElementById("form-title").textContent = "Edit Reel Rule";
+      document.getElementById("rule-id").value = rule.id;
+      document.getElementById("media-id").value = rule.media_id;
+      document.getElementById("keywords").value = rule.keyword;
+      document.getElementById("link").value = rule.link;
+      document.getElementById("dm-message").value = rule.dm_message;
+
+      const radios = document.getElementsByName("matchMode");
+      radios.forEach(r => { r.checked = r.value === rule.match_mode; });
+
+      updatePreview();
+      switchTab("form-tab");
+    };
+
+    // Submit Rule Form (Create or Update)
+    document.getElementById("rule-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById("save-rule-btn");
+      saveBtn.disabled = true;
+
+      const id = document.getElementById("rule-id").value;
+      const mediaId = document.getElementById("media-id").value.trim();
+      const keyword = document.getElementById("keywords").value.trim();
+      const link = document.getElementById("link").value.trim();
+      const dmMessage = document.getElementById("dm-message").value;
+      const matchMode = document.querySelector('input[name="matchMode"]:checked').value;
+
+      const payload = { mediaId, keyword, link, dmMessage, matchMode };
+      const url = id ? `/api/keywords/${id}` : "/api/keywords";
+      const method = id ? "PUT" : "POST";
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        saveBtn.disabled = false;
+
+        if (!res.ok || data.error) {
+          alert(data.error || "Failed to save rule");
+          return;
+        }
+
+        // Reset form and switch back
+        document.getElementById("rule-form").reset();
+        document.getElementById("rule-id").value = "";
+        document.getElementById("form-title").textContent = "Create New Reel Rule";
+        updatePreview();
+        switchTab("rules-tab");
+        loadRules();
+        loadStats();
+      } catch (err) {
+        saveBtn.disabled = false;
+        alert("Network error: " + err.message);
+      }
+    });
+
+    // Reset form when "+ New Reel Rule" tab clicked
+    document.getElementById("form-tab-btn").addEventListener("click", () => {
+      document.getElementById("rule-form").reset();
+      document.getElementById("rule-id").value = "";
+      document.getElementById("form-title").textContent = "Create New Reel Rule";
+      updatePreview();
+    });
+
+    // Load Activity Log
+    async function loadActivity() {
+      const tbody = document.getElementById("activity-tbody");
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:32px;">Loading activity...</td></tr>`;
+
+      try {
+        const res = await fetch("/api/activity?limit=50");
+        const json = await res.json();
+        const items = json.data || [];
+
+        if (items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:32px;">No comments processed yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = items.map(item => {
+          let badgeClass = "badge-active";
+          if (item.status === "failed") badgeClass = "badge-paused";
+          if (item.status === "skipped") badgeClass = "badge-paused";
+
+          return `
+            <tr>
+              <td><span class="badge ${badgeClass}">${item.status}</span></td>
+              <td><strong>@${item.commenter_username || 'anonymous'}</strong></td>
+              <td style="font-family:monospace; font-size:12px;">${item.media_id}</td>
+              <td>${item.matched_keyword ? `<span class="chip" style="font-size:11px;">${item.matched_keyword}</span>` : '—'}</td>
+              <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.comment_text || ''}</td>
+              <td style="color:var(--muted); font-size:12px;">${new Date(item.created_at).toLocaleString()}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger); padding:32px;">Failed to load activity log: ${err.message}</td></tr>`;
+      }
+    }
+
+    document.getElementById("refresh-activity-btn").addEventListener("click", loadActivity);
+
+    // Initial Load
+    loadStats();
+    loadRules();
+  </script>
+</body>
+</html>

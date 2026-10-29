@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — ReelRelay</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg);
+      padding: 16px;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .login-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .login-header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(108, 92, 231, 0.1);
+      color: var(--primary);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <div class="brand-badge">⚡ ReelRelay Cloudflare Edge</div>
+      <h1>Admin Dashboard</h1>
+      <p>Enter your master admin password to continue</p>
+    </div>
+
+    <div class="card" style="padding: 28px;">
+      <div id="error-alert" style="display: none; background: rgba(220, 38, 38, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: var(--input-radius); margin-bottom: 16px; font-size: 14px;"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="password" class="form-label">Master Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="••••••••••••"
+            required
+            autocomplete="current-password"
+            autofocus
+          />
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; margin-top: 8px;">
+          Log In →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("login-form");
+    const errorAlert = document.getElementById("error-alert");
+    const submitBtn = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorAlert.style.display = "none";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Verifying...";
+
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          errorAlert.textContent = data.error || "Login failed. Please check your password.";
+          errorAlert.style.display = "block";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Log In →";
+          return;
+        }
+
+        // Redirect to dashboard on success
+        window.location.href = "/";
+      } catch (err) {
+        errorAlert.textContent = "Network error connecting to server. Please try again.";
+        errorAlert.style.display = "block";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Log In →";
+      }
+    });
+  </script>
+</body>
+</html>
