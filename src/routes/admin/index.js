@@ -2,7 +2,6 @@ const express = require("express");
 const authRoutes = require("./auth");
 const overviewRoutes = require("./overview");
 const instagramRoutes = require("./instagram");
-const youtubeRoutes = require("./youtube");
 const { requireAuth } = require("../../middleware/auth");
 const { doubleCsrfProtection, csrfErrorHandler } = require("../../middleware/csrf");
 
@@ -44,7 +43,6 @@ router.use("/api", createLegacyRedirect("api"));
 
 // Protected Admin routes
 router.use("/instagram", requireAuth, instagramRoutes);
-router.use("/youtube", requireAuth, youtubeRoutes);
 router.use("/", requireAuth, overviewRoutes);
 
 module.exports = router;
