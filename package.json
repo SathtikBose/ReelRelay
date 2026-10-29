@@ -4,7 +4,7 @@
   "description": "Instagram automated comment-to-DM platform on Cloudflare Workers",
   "main": "src/index.ts",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "dev": "wrangler dev",
